@@ -78,8 +78,7 @@ RegulaFalsi:
 			j Bucle
 		
 	SolucionCorrecta:
-		add $v0,$zero,$zero
-		addi $v0,$zero,0
+		li $v0, 0
 		
 		bc1t 2, ImagenA
 		bc1t 3, ImagenB
@@ -95,13 +94,11 @@ RegulaFalsi:
 			j Exit
 			
 	ErrorIntervalo:
-		add $v0,$zero,$zero
-		addi $v0,$zero,1
+		li $v0, 1
 		j Exit
 
 	ErrorTolerancia:
-		add $v0,$zero,$zero
-		addi $v0,$zero,2
+		li $v0, 2
 		j Exit
 
 	Exit:
