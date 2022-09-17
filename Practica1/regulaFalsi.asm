@@ -42,15 +42,7 @@ RegulaFalsi:
 	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
 	bc1t 3, SolucionCorrecta
 	
-	Bucle:
-		mov.s $f12,$f21 # Paso el valor (a) a $f12
-		jal F
-		mov.s $f23,$f0 # f(a) en $f23
-		
-		mov.s $f12,$f22 # Paso el valor (b) a $f12
-		jal F
-		mov.s $f24,$f0# f(b) en $f24
-		
+	Bucle:	
 		mul.s $f3,$f21,$f24
 		mul.s $f4,$f22,$f23
 		sub.s $f4,$f3,$f4
@@ -71,10 +63,16 @@ RegulaFalsi:
 		
 		AsignoA:
 			mov.s $f21, $f25 # Asigno a A C
+			mov.s $f12,$f21 # Paso el valor (a) a $f12
+			jal F
+			mov.s $f23,$f0 # f(a) en $f23
 			j Bucle
 			
 		AsignoB:
 			mov.s $f22, $f25 # Asigno a B C
+			mov.s $f12,$f22 # Paso el valor (b) a $f12
+			jal F
+			mov.s $f24,$f0# f(b) en $f24
 			j Bucle
 		
 	SolucionCorrecta:
