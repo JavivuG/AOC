@@ -32,15 +32,15 @@ RegulaFalsi:
 	jal F
 	mov.s $f24, $f0
 	
-	mul.s $f1,$f23,$f24
-	c.lt.s 1, $f1, $f26 # Si son iguales los extremos entonces salgo
-	bc1f 1, ErrorIntervalo
-	
 	c.eq.s 2, $f23, $f26 # Si f(a) es 0 entonces solucion
 	bc1t 2, SolucionCorrecta
 	
 	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
 	bc1t 3, SolucionCorrecta
+	
+	mul.s $f1,$f23,$f24
+	c.lt.s 1, $f1, $f26 # Si son iguales los extremos entonces salgo
+	bc1f 1, ErrorIntervalo
 	
 	Bucle:	
 		mul.s $f3,$f21,$f24
