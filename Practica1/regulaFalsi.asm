@@ -81,10 +81,10 @@ RegulaFalsi:
 		j Exit
 		
 		ImagenA:
-			mov.s $f0, $f23
+			mov.s $f0, $f21
 			j Exit
 		ImagenB:
-			mov.s $f0, $f24
+			mov.s $f0, $f22
 			j Exit
 			
 	ErrorIntervalo:
