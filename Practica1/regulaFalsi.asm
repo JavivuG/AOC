@@ -63,16 +63,12 @@ RegulaFalsi:
 		
 		AsignoA:
 			mov.s $f21, $f25 # Asigno a A C
-			mov.s $f12,$f21 # Paso el valor (a) a $f12
-			jal F
-			mov.s $f23,$f0 # f(a) en $f23
+			mov.s $f23,$f27 # f(a) en $f23
 			j Bucle
 			
 		AsignoB:
 			mov.s $f22, $f25 # Asigno a B C
-			mov.s $f12,$f22 # Paso el valor (b) a $f12
-			jal F
-			mov.s $f24,$f0# f(b) en $f24
+			mov.s $f24,$f27 # f(b) en $f24
 			j Bucle
 		
 	SolucionCorrecta:
