@@ -3,16 +3,15 @@ Cero: .float 0.0
 
 .text
 RegulaFalsi:
-	addi $sp, $sp, -36 #Se guarda en la pila
+	addi $sp, $sp, -32 #Se guarda en la pila
 	swc1 $f20, 0($sp)
 	swc1 $f21, 4($sp)
 	swc1 $f22, 8($sp)
 	swc1 $f23, 12($sp)
 	swc1 $f24, 16($sp)
-	swc1 $f25, 20($sp)
-	swc1 $f26, 24($sp)
-	swc1 $f27, 28($sp)
-	sw $ra, 32($sp)	
+	swc1 $f26, 20($sp)
+	swc1 $f27, 24($sp)
+	sw $ra, 28($sp)	
 	
 	mov.s $f20,$f12 #Tolerancia en $f20
 	mov.s $f21,$f13 # a en $f21
@@ -21,22 +20,23 @@ RegulaFalsi:
 	la $t0, Cero # Cargo cero en registro temporal
 	lwc1 $f26,0($t0) #$f26 contiene 0.0
 	
-	c.le.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
+	
+	c.lt.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
 	bc1t 1, ErrorTolerancia
 	
 	mov.s $f12, $f21
 	jal F
 	mov.s $f23,$f0
 	
+	c.eq.s 2, $f23, $f26 # Si f(a) es 0 entonces solucion
+	bc1t 2, ImagenA
+	
 	mov.s $f12,$f22
 	jal F
 	mov.s $f24, $f0
 	
-	c.eq.s 2, $f23, $f26 # Si f(a) es 0 entonces solucion
-	bc1t 2, SolucionCorrecta
-	
 	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
-	bc1t 3, SolucionCorrecta
+	bc1t 3, ImagenB
 	
 	mul.s $f1,$f23,$f24
 	c.lt.s 1, $f1, $f26 # Si son iguales los extremos entonces salgo
@@ -47,8 +47,7 @@ RegulaFalsi:
 		mul.s $f4,$f22,$f23
 		sub.s $f4,$f3,$f4
 		sub.s $f3,$f24,$f23
-		div.s $f25,$f4,$f3
-		mov.s $f12,$f25 # c en $f25
+		div.s $f12,$f4,$f3 # c en $f12
 		jal F
 		mov.s $f27,$f0 # f(c) en $f27
 		
@@ -61,28 +60,27 @@ RegulaFalsi:
 		bc1t 1, AsignoB
 		
 		AsignoA:
-			mov.s $f21, $f25 # Asigno a A C
+			mov.s $f21, $f12 # Asigno a A C
 			mov.s $f23,$f27 # f(a) en $f23
 			j Bucle
 			
 		AsignoB:
-			mov.s $f22, $f25 # Asigno a B C
+			mov.s $f22, $f12 # Asigno a B C
 			mov.s $f24,$f27 # f(b) en $f24
 			j Bucle
 		
 	SolucionCorrecta:
+		mov.s $f0, $f12 # Devuelvo en $f0 el valor c
 		li $v0, 0
 		
-		bc1t 2, ImagenA
-		bc1t 3, ImagenB
-		
-		mov.s $f0, $f25 # Devuelvo en $f0 el valor c
 		j Exit
 		
 		ImagenA:
+			li $v0, 0
 			mov.s $f0, $f21
 			j Exit
 		ImagenB:
+			li $v0, 0
 			mov.s $f0, $f22
 			j Exit
 			
@@ -100,9 +98,8 @@ RegulaFalsi:
 		lwc1 $f22, 8($sp)
 		lwc1 $f23, 12($sp)
 		lwc1 $f24, 16($sp)
-		lwc1 $f25, 20($sp)
-		lwc1 $f26, 24($sp)
-		lwc1 $f27, 28($sp)
-		lw $ra, 32($sp)	
-		addi $sp, $sp, 36 #Se restaura la pila
+		lwc1 $f26, 20($sp)
+		lwc1 $f27, 24($sp)
+		lw $ra, 28($sp)	
+		addi $sp, $sp, 32 #Se restaura la pila
 		jr $ra	
