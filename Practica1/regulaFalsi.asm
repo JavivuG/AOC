@@ -47,8 +47,7 @@ RegulaFalsi:
 		mul.s $f4,$f22,$f23
 		sub.s $f4,$f3,$f4
 		sub.s $f3,$f24,$f23
-		div.s $f4,$f4,$f3
-		mov.s $f25,$f4
+		div.s $f25,$f4,$f3
 		mov.s $f12,$f25 # c en $f25
 		jal F
 		mov.s $f27,$f0 # f(c) en $f27
