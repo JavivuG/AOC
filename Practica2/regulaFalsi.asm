@@ -63,7 +63,7 @@ RegulaFalsi:
 			jal RegulaFalsi
 			
 		AsignoB:
-			mov.s $14, $f25 # Asigno a B C
+			mov.s $f14, $f25 # Asigno a B C
 			jal RegulaFalsi
 		
 	SolucionCorrecta:
