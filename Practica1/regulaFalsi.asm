@@ -3,15 +3,14 @@ Cero: .float 0.0
 
 .text
 RegulaFalsi:
-	addi $sp, $sp, -32 #Se guarda en la pila
+	addi $sp, $sp, -28 #Se guarda en la pila
 	swc1 $f20, 0($sp)
 	swc1 $f21, 4($sp)
 	swc1 $f22, 8($sp)
 	swc1 $f23, 12($sp)
 	swc1 $f24, 16($sp)
 	swc1 $f26, 20($sp)
-	swc1 $f27, 24($sp)
-	sw $ra, 28($sp)	
+	sw $ra, 24($sp)	
 	
 	mov.s $f20,$f12 #Tolerancia en $f20
 	mov.s $f21,$f13 # a en $f21
@@ -49,24 +48,23 @@ RegulaFalsi:
 		sub.s $f3,$f24,$f23
 		div.s $f12,$f4,$f3 # c en $f12
 		jal F
-		mov.s $f27,$f0 # f(c) en $f27
-		
-		abs.s $f6, $f27
+		# f(c) en $f0
+		abs.s $f6, $f0
 		c.lt.s 1, $f6, $f20 # Si la imagen  de c es menor que la tolerancia entonces es la solucion
 		bc1t 1, SolucionCorrecta
 		
-		mul.s $f6, $f23, $f27 # Si f(a)*f(c) son < 0 entonces son de distinto signo
+		mul.s $f6, $f23, $f0 # Si f(a)*f(c) son < 0 entonces son de distinto signo
 		c.lt.s 1, $f6, $f26
 		bc1t 1, AsignoB
 		
 		AsignoA:
 			mov.s $f21, $f12 # Asigno a A C
-			mov.s $f23,$f27 # f(a) en $f23
+			mov.s $f23,$f0 # f(a) en $f23
 			j Bucle
 			
 		AsignoB:
 			mov.s $f22, $f12 # Asigno a B C
-			mov.s $f24,$f27 # f(b) en $f24
+			mov.s $f24,$f0 # f(b) en $f24
 			j Bucle
 		
 	SolucionCorrecta:
@@ -99,7 +97,6 @@ RegulaFalsi:
 		lwc1 $f23, 12($sp)
 		lwc1 $f24, 16($sp)
 		lwc1 $f26, 20($sp)
-		lwc1 $f27, 24($sp)
-		lw $ra, 28($sp)	
-		addi $sp, $sp, 32 #Se restaura la pila
+		lw $ra, 24($sp)	
+		addi $sp, $sp, 28 #Se restaura la pila
 		jr $ra	

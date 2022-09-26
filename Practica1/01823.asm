@@ -1,0 +1,102 @@
+.data
+Cero: .float 0.0
+
+.text
+RegulaFalsi:
+	addi $sp, $sp, -28 #Se guarda en la pila
+	swc1 $f20, 0($sp)
+	swc1 $f21, 4($sp)
+	swc1 $f22, 8($sp)
+	swc1 $f23, 12($sp)
+	swc1 $f24, 16($sp)
+	swc1 $f26, 20($sp)
+	sw $ra, 24($sp)	
+	
+	mov.s $f20,$f12 #Tolerancia en $f20
+	mov.s $f21,$f13 # a en $f21
+	mov.s $f22,$f14 # b en $f22
+
+	la $t0, Cero # Cargo cero en registro temporal
+	lwc1 $f26,0($t0) #$f26 contiene 0.0
+	
+	
+	c.lt.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
+	bc1t 1, ErrorTolerancia
+	
+	mov.s $f12, $f21
+	jal F
+	mov.s $f23,$f0
+	
+	c.eq.s 2, $f23, $f26 # Si f(a) es 0 entonces solucion
+	bc1t 2, ImagenA
+	
+	mov.s $f12,$f22
+	jal F
+	mov.s $f24, $f0
+	
+	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
+	bc1t 3, ImagenB
+	
+	mul.s $f1,$f23,$f24
+	c.lt.s 1, $f1, $f26 # Si son iguales los extremos entonces salgo
+	bc1f 1, ErrorIntervalo
+	
+	Bucle:	
+		mul.s $f3,$f21,$f24
+		mul.s $f4,$f22,$f23
+		sub.s $f4,$f3,$f4
+		sub.s $f3,$f24,$f23
+		div.s $f12,$f4,$f3 # c en $f12
+		jal F
+		# f(c) en $f0
+		abs.s $f6, $f0
+		c.lt.s 1, $f6, $f20 # Si la imagen  de c es menor que la tolerancia entonces es la solucion
+		bc1t 1, SolucionCorrecta
+		
+		mul.s $f6, $f23, $f0 # Si f(a)*f(c) son < 0 entonces son de distinto signo
+		c.lt.s 1, $f6, $f26
+		bc1t 1, AsignoB
+		
+		AsignoA:
+			mov.s $f21, $f12 # Asigno a A C
+			mov.s $f23,$f0 # f(a) en $f23
+			j Bucle
+			
+		AsignoB:
+			mov.s $f22, $f12 # Asigno a B C
+			mov.s $f24,$f0 # f(b) en $f24
+			j Bucle
+		
+	SolucionCorrecta:
+		mov.s $f0, $f12 # Devuelvo en $f0 el valor c
+		li $v0, 0
+		
+		j Exit
+		
+		ImagenA:
+			li $v0, 0
+			mov.s $f0, $f21
+			j Exit
+		ImagenB:
+			li $v0, 0
+			mov.s $f0, $f22
+			j Exit
+			
+	ErrorIntervalo:
+		li $v0, 1
+		j Exit
+
+	ErrorTolerancia:
+		li $v0, 2
+		j Exit
+
+	Exit:
+		lwc1 $f20, 0($sp)
+		lwc1 $f21, 4($sp)
+		lwc1 $f22, 8($sp)
+		lwc1 $f23, 12($sp)
+		lwc1 $f24, 16($sp)
+		lwc1 $f26, 20($sp)
+		lw $ra, 24($sp)	
+		addi $sp, $sp, 28 #Se restaura la pila
+		jr $ra	
