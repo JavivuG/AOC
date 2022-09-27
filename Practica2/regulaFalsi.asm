@@ -11,14 +11,13 @@ RegulaFalsi:
 	swc1 $f24, 16($sp)
 	swc1 $f25,20($sp)
 	swc1 $f26, 24($sp)
-	swc1 $f27, 28($sp)
-	sw $ra, 32($sp)	
+	sw $ra, 28($sp)	
 	
-	mov.s $f20,$f12 #Tolerancia en $f20
+	mov.s $f20, $f12 #Tolerancia en $f20
 	la $t0, Cero # Cargo cero en registro temporal
 	lwc1 $f26,0($t0) #$f26 contiene 0.0
 
-	c.lt.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
+	c.le.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
 	bc1t 1, ErrorTolerancia
 	
 	mov.s $f21,$f13 # a en $f21
@@ -47,24 +46,26 @@ RegulaFalsi:
 		div.s $f25,$f4,$f3
 		mov.s $f12,$f25
 		jal F
-		mov.s $f27,$f0 # f(c) en $f27
 		
-		abs.s $f6, $f27
+		abs.s $f6, $f0
 		c.lt.s 1, $f6, $f20 # Si la imagen  de c es menor que la tolerancia entonces es la solucion
 		bc1t 1, SolucionCorrecta
 		
-		mul.s $f6, $f23, $f27 # Si f(a)*f(c) son < 0 entonces son de distinto signo
+		mul.s $f6, $f23, $f0 # Si f(a)*f(c) son < 0 entonces son de distinto signo
 		mov.s $f12, $f20
 		c.lt.s 1, $f6, $f26
 		bc1t 1, AsignoB
 		
 		AsignoA:
 			mov.s $f13, $f25 # Asigno a A C
+			mov.s $f14, $f22
 			jal RegulaFalsi
-			
+			j Exit
 		AsignoB:
 			mov.s $f14, $f25 # Asigno a B C
+			mov.s $f13, $f21
 			jal RegulaFalsi
+			j Exit
 		
 	SolucionCorrecta:
 		li $v0, 0
@@ -98,7 +99,6 @@ RegulaFalsi:
 		lwc1 $f24, 16($sp)
 		lwc1 $f25,20($sp)
 		lwc1 $f26, 24($sp)
-		lwc1 $f27, 28($sp)
-		lw $ra, 32($sp)	
+		lw $ra, 28($sp)	
 		addi $sp, $sp, 32 #Se restaura la pila
 		jr $ra	
