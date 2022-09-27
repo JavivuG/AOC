@@ -13,13 +13,13 @@ RegulaFalsi:
 	swc1 $f26, 24($sp)
 	sw $ra, 28($sp)	
 	
-	mov.s $f20, $f12 #Tolerancia en $f20
 	la $t0, Cero # Cargo cero en registro temporal
 	lwc1 $f26,0($t0) #$f26 contiene 0.0
 
-	c.le.s 1, $f20, $f26 # Si tolerancia es menor o igual que cero
+	c.le.s 1, $f12, $f26 # Si tolerancia es menor o igual que cero
 	bc1t 1, ErrorTolerancia
 	
+	mov.s $f20, $f12 #Tolerancia en $f20
 	mov.s $f21,$f13 # a en $f21
 	mov.s $f22,$f14 # b en $f22
 	
@@ -31,7 +31,7 @@ RegulaFalsi:
 	
 	mov.s $f12,$f22
 	jal F
-	mov.s $f24, $f0
+	mov.s $f24, $f0 # Se podría usar $f0 para almacenar f(b)
 	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
 	bc1t 3, SolucionCorrecta
 	
@@ -89,7 +89,6 @@ RegulaFalsi:
 
 	ErrorTolerancia:
 		li $v0, 2
-		j Exit
 
 	Exit:
 		lwc1 $f20, 0($sp)
