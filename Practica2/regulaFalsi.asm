@@ -3,15 +3,14 @@ Cero: .float 0.0
 
 .text
 RegulaFalsi:
-	addi $sp, $sp, -32 #Se guarda en la pila
+	addi $sp, $sp, -28 #Se guarda en la pila
 	swc1 $f20, 0($sp)
 	swc1 $f21, 4($sp)
 	swc1 $f22, 8($sp)
 	swc1 $f23, 12($sp)
-	swc1 $f24, 16($sp)
-	swc1 $f25,20($sp)
-	swc1 $f26, 24($sp)
-	sw $ra, 28($sp)	
+	swc1 $f25,16($sp)
+	swc1 $f26, 20($sp)
+	sw $ra, 24($sp)	
 	
 	la $t0, Cero # Cargo cero en registro temporal
 	lwc1 $f26,0($t0) #$f26 contiene 0.0
@@ -31,18 +30,17 @@ RegulaFalsi:
 	
 	mov.s $f12,$f22
 	jal F
-	mov.s $f24, $f0 # Se podría usar $f0 para almacenar f(b)
-	c.eq.s 3, $f24, $f26 # Si f(b) es 0 entonces solucion
+	c.eq.s 3, $f0, $f26 # Si f(b) es 0 entonces solucion
 	bc1t 3, SolucionCorrecta
 	
-	mul.s $f1,$f23,$f24
+	mul.s $f1,$f23,$f0
 	c.lt.s 1, $f1, $f26 # Si son iguales los extremos entonces salgo
 	bc1f 1, ErrorIntervalo
 	
-		mul.s $f3,$f21,$f24
+		mul.s $f3,$f21,$f0
 		mul.s $f4,$f22,$f23
 		sub.s $f4,$f3,$f4
-		sub.s $f3,$f24,$f23
+		sub.s $f3,$f0,$f23
 		div.s $f25,$f4,$f3
 		mov.s $f12,$f25
 		jal F
@@ -95,9 +93,8 @@ RegulaFalsi:
 		lwc1 $f21, 4($sp)
 		lwc1 $f22, 8($sp)
 		lwc1 $f23, 12($sp)
-		lwc1 $f24, 16($sp)
-		lwc1 $f25,20($sp)
-		lwc1 $f26, 24($sp)
-		lw $ra, 28($sp)	
-		addi $sp, $sp, 32 #Se restaura la pila
+		lwc1 $f25,16($sp)
+		lwc1 $f26, 20($sp)
+		lw $ra, 24($sp)	
+		addi $sp, $sp, 28 #Se restaura la pila
 		jr $ra	
