@@ -29,7 +29,7 @@ RegulaFalsi:
 	bc1t 2, SolucionCorrecta
 	
 	mov.s $f12,$f22
-	jal F
+	jal F # Importante guardo f(b) en $f0
 	c.eq.s 3, $f0, $f26 # Si f(b) es 0 entonces solucion
 	bc1t 3, SolucionCorrecta
 	
@@ -57,12 +57,12 @@ RegulaFalsi:
 		AsignoA:
 			mov.s $f13, $f25 # Asigno a A C
 			mov.s $f14, $f22
-			jal RegulaFalsi
-			j Exit
+			jal RegulaFalsi # Devuelve la solucion correcta por lo tanto salgo
+			j Exit 
 		AsignoB:
 			mov.s $f14, $f25 # Asigno a B C
 			mov.s $f13, $f21
-			jal RegulaFalsi
+			jal RegulaFalsi # Devuelve la solucion correcta por lo tanto salgo
 			j Exit
 		
 	SolucionCorrecta:
