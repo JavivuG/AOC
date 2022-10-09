@@ -89,10 +89,6 @@ a1Valido:
 			ori $t3,$t3,0x00000080
 			j Bucle
 			
-			Positivo8:
-			
-			Negativo8:
-			
 		bits161:
 			andi $t3, $a0, 65535
 			andi $t1,$a0,0x00008000
@@ -109,11 +105,6 @@ a1Valido:
 			ori $t3,$t3,0x00008000
 			
 			j Bucle
-			
-			
-			Positivo16:
-			
-			Negativo16:
 		
 		bits321:
 			andi $t1,$a0,0x80000000
