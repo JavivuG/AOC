@@ -1,3 +1,5 @@
+
+
 .text
 itoa:
 
@@ -8,6 +10,7 @@ itoa:
 	blt $t0,$zero,bits321 #Si el resto es negativo significa que el parametro a1 es negativo, por ello lo tomaremos como si fuese un 0
 	blt $t1,3,a1Valido #Comprueba si el valor de a1 esta entre los especificados
 	j bits321 #En caso contrario salta a la opcion por defecto
+	
 	
 a1Valido:
 	beq $t0, $zero, Par
@@ -63,10 +66,12 @@ a1Valido:
 			blt $t6, $a2, Exit # Condicion de acabado
 			j Bucle1
 		
+	
 	Par: # Complemento a 2
 		#Seleccionamos el modo correcto
 		beq $t1, $zero, bits321
 		beq  $t1, 1, bits161
+		
 		
 		bits81:
 			andi $t3, $a0, 255
@@ -84,6 +89,10 @@ a1Valido:
 			ori $t3,$t3,0x00000080
 			j Bucle
 			
+			Positivo8:
+			
+			Negativo8:
+			
 		bits161:
 			andi $t3, $a0, 65535
 			andi $t1,$a0,0x00008000
@@ -100,6 +109,11 @@ a1Valido:
 			ori $t3,$t3,0x00008000
 			
 			j Bucle
+			
+			
+			Positivo16:
+			
+			Negativo16:
 		
 		bits321:
 			andi $t1,$a0,0x80000000
@@ -114,43 +128,36 @@ a1Valido:
 			addi $t3,$t3,1
 			andi $t3,$t3,0x7fffffff
 			bne $t3,$zero,Bucle	#Ahora que el valor es positivo 
-			
 Overflow:		#Caso extremo en el cual recibe el -2^31 cuyo opuesto no se puede representar, ya que ocupa mas de 32 bits
 			#Como se trata de un unico caso aislado lo resolvemos directamente almacenando los caracteres correspondientes
 			#Hemos considerado esta manera, ya que al ser un unico caso es mas eficiente (menos instrucciones) que evaluarlo con un bucle como hacemos con el resto
 			#Ademas realizar operaciones aritmeticas con este valor conlleva un gran riesgo de desbordamiento
 			addi $t1,$zero,'2'
 			sb $t1, 0($a2)
-			addi $a2,$a2,1
 			addi $t1,$zero,'1'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 1($a2)
 			addi $t1,$zero,'4'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 2($a2)
 			addi $t1,$zero,'7'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 3($a2)
 			addi $t1,$zero,'4'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 4($a2)
 			addi $t1,$zero,'8'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 5($a2)
 			addi $t1,$zero,'3'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 6($a2)			
 			addi $t1,$zero,'6'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 7($a2)			
 			addi $t1,$zero,'4'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
+			sb $t1, 8($a2)
 			addi $t1,$zero,'8'
-			sb $t1, 0($a2)
-			addi $a2,$a2,1
-			sb $zero, 0($a2)
-
+			sb $t1, 9($a2)
+			sb $zero, 10($a2)
+			
+			
+			
+			
+			
 	Exit:
 		jr $ra
 				
