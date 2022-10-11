@@ -13,16 +13,28 @@ atoi:
 	add $v0,$zero,$zero
 	add $t4, $zero, 10
 		
-		beq $t1, 45, Negativo#Caution
+		beq $t1, 45, Negativo
+		bne $t1,43,SignoMas
+		addi $a0,$a0,1
+		j PrimerElemento
+	SignoMas:
 		blt $t1, 58, Comprobacion
-	
+		j ErrorCaracter
+	PrimerElemento:
+			lb $t1,0($a0)
+			blt $t1,58,Comprobacion
+			j ErrorCaracter
+			
 		Bucle1:
 			lb $t1,0($a0)
 			blt $t1,58,ComprobacionBucle
+			j TodoCorrecto
 		Sigo:
 			mulu $v0,$v0,$t4
+			blt $v0,$zero,ErrorOverflow
 			addi $t1, $t1, -48
 			add $v0,$v0,$t1
+			blt $v0,$zero,ErrorOverflow
 			addi $a0,$a0,1
 			j Bucle1
 	
@@ -41,10 +53,13 @@ atoi:
 	 	# Flag de valor negativo
 	 	addi $t6, $zero, -1
 	 	addi $a0,$a0,1
-	 	j Bucle1
+	 	j PrimerElemento
 	
 	ErrorCaracter:
 		li $v1, 1
+		j Exit
+	ErrorOverflow:
+		li $v1,2
 		j Exit
 	
 	TodoCorrecto:
