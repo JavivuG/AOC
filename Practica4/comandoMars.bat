@@ -1,3 +1,3 @@
 cd C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python38\
 
-py ./client -u g105 -x ***REMOVED*** -q mars_atoi .\AOC\Practica3\atoi.asm -- -1#1  
+py ./client -u g105 -x ***REMOVED*** -q mars_atoi .\AOC\Practica4\atoi.asm -- 123 

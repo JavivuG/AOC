@@ -1,42 +1,57 @@
 .data
+.text
 atoi:
-	add $t0, $a0, $zero # Direccion de la cadena en $t0
-	add $t5, $zero, $zero
-	addi $t3, $zero, 1 
-	add $t4, $zero, 10
 
-		lb $t1, 0($t0)
+
+	EspaciosInicio:
+		
+		lb $t1,0($a0)
+		bne $t1,32,FinEspacios
+		addi $a0,$a0,1
+		j EspaciosInicio
+	FinEspacios:
+	
+	add $v0,$zero,$zero
+	add $t4, $zero, 10
+		
+		addi $a0,$a0,1
 		beq $t1, 45, Negativo
-		beq $t1, 43, Sigo # En el caso de que sea positivo
 		blt $t1, 58, Comprobacion
-		beq $t3, 1, ErrorCaracter
 	
 		Bucle1:
-			addi $t1, $t1, -48
-			mul $t1, $t1, $t3
-			add $t5, $t5, $t1
-			mul $t3, $t3, $t4 # Actualizo $t3 multiplicandolo por 10 en cada iteracion 
-	
+			lb $t1,0($a0)
+			blt $t1,58,ComprobacionBucle
 		Sigo:
-			addi $t0, $t0, 1 # Incremento el apuntador
-			beq $t1, $zero, Exit # Si llego al terminador de cadena salgo
-			j Bucle
+		
+			mul $v0,$v0,$t4
+			addi $t1, $t1, -48
+			add $v0,$v0,$t1
+			addi $a0,$a0,1
+			j Bucle1
+	
 
 	Comprobacion:
 		bge $t1, 48, Bucle1
-	 
+	 	beq $t1,43,Bucle1
+	 	j ErrorCaracter
+	ComprobacionBucle:
+		bge $t1, 48, Sigo
+		beq $t1,$zero,TodoCorrecto
+		j ErrorCaracter
+	 	
 	 Negativo:
 	 	# Flag de valor negativo
-	 	addi $t6, $zero, 1
+	 	addi $t6, $zero, -1
 	 	j Sigo
-		
-		
+	
 	ErrorCaracter:
 		li $v1, 1
 		j Exit
 	
 	TodoCorrecto:
-		add $v0, $t5, $zero
+		bne $t6,-1,Positivo
+		mul $v0,$v0,$t6
+	Positivo:
 		li $v1, 0
 	
 	Exit:
