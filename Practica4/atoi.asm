@@ -30,7 +30,10 @@ atoi:
 			blt $t1,58,ComprobacionBucle
 			j TodoCorrecto
 		Sigo:
+			
 			mulu $v0,$v0,$t4
+			mfhi $t7
+			bne $t7, $zero, ErrorOverflow
 			blt $v0,$zero,ErrorOverflow
 			addi $t1, $t1, -48
 			add $v0,$v0,$t1
@@ -44,6 +47,7 @@ atoi:
 		bge $t1, 48, Sigo
 	 	#beq $t1,43,Bucle1
 	 	j ErrorCaracter
+	 	
 	ComprobacionBucle:
 		bge $t1, 48, Sigo
 		beq $t1,$zero,TodoCorrecto
@@ -58,6 +62,7 @@ atoi:
 	ErrorCaracter:
 		li $v1, 1
 		j Exit
+		
 	ErrorOverflow:
 		li $v1,2
 		j Exit
