@@ -30,12 +30,25 @@ atoi:
 			blt $t1,58,ComprobacionBucle
 			j TodoCorrecto
 		Sigo:
-			
+			addu $t7, $v0, $t4
+			xor $t0, $v0, $t7
+			xor $t3, $t4, $t7
+			and $t0, $t0, $t3
+			blt $t0, $zero, ErrorOverflow
 			mulu $v0,$v0,$t4
 			mfhi $t7
+			
 			bne $t7, $zero, ErrorOverflow
 			blt $v0,$zero,ErrorOverflow
+			
 			addi $t1, $t1, -48
+			
+			addu $t7, $v0, $t1
+			xor $t0, $v0, $t7
+			xor $t3, $t1, $t7
+			and $t0, $t0, $t3
+			blt $t0, $zero, ErrorOverflow
+			
 			add $v0,$v0,$t1
 			blt $v0,$zero,ErrorOverflow
 			addi $a0,$a0,1
