@@ -32,12 +32,15 @@ atoi:
 		Sigo:
 
 			mulu $v0,$v0,$t4
+			addi $t1, $t1, -48
+			beq $v0, 2147483640, CasoEspecial
+		Sigo2:
 			mfhi $t7
 			
 			bne $t7, $zero, ErrorOverflow
 			blt $v0,$zero,ErrorOverflow
 			
-			addi $t1, $t1, -48
+			
 			
 			addu $t7, $v0, $t1
 			xor $t0, $v0, $t7
@@ -45,12 +48,21 @@ atoi:
 			and $t0, $t0, $t3
 			blt $t0, $zero, ErrorOverflow
 			
+			
+		
 			add $v0,$v0,$t1
 			blt $v0,$zero,ErrorOverflow
 			addi $a0,$a0,1
 			j Bucle1
 	
-
+	CasoEspecial:
+		bne $t6, -1, Sigo2  
+		bne $t1, 8, Sigo2
+		add $v0, $zero, $zero
+		ori $v0, $v0, 0x80000000
+		add $t6, $zero, $zero
+		j TodoCorrecto
+	
 	Comprobacion:
 		
 		bge $t1, 48, Sigo
