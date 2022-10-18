@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Configuración de pipeline en MARS. Atributos del pipe-->
+<!-- tipo:  ideal, simple, multiciclo, tomasulo-->
+<!-- limite: número de instrucciones que imprimirán el diagrama multiciclo -->
+<!-- ventana: número de instrucciones por ventana de diagrama multiciclo -->
+<!-- practica: Número de práctica. Sólo para Tomasulo. Entero entre 2 y 4-->
+
+<pipeline tipo="simple" limite="100" ventana="20">
+	
+	
+	<!-- Opciones de pipeline simple  --> 
+	<!-- forwarding options: true, false (no data hazards). Default: true-->
+	<!-- braches indica la etapa de resolución de los saltos. Opciones: ID, EX, MEM. Default: EX-->
+	<!-- predictor de saltos condicionales: ideal, taken, notTaken, stop, delayed (solo compatible con branches=ID) -->
+	
+	<forwarding>true</forwarding>
+	<branches>ID</branches>
+	<predictor>notTaken</predictor>
+		
+</pipeline>
+
