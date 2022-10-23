@@ -15,11 +15,14 @@ vecMaxMin:
 vecMaxMin_loop:
 	lw $t1, 0($a0)		#CARGO PALABRA
 	addi $a0, $a0, 4
+	slt $t7,$v0,$t1
+	slt $t6,$v1,$t1
 	addi $t0, $t0, 1
-	bgt $v0, $t1, check_min #si v0 es mayor que el valor leido, no actualizo el maximo
+	beq $t7, $zero, check_min #si v0 es mayor que el valor leido, no actualizo el maximo
 	move $v0, $t1
 check_min:
-	blt $v1, $t1, incr_punt #si v1 es menor que el valor leido, no actulizo el minimo
+
+	bne $t6, $zero, incr_punt #si v1 es menor que el valor leido, no actulizo el minimo
 	move $v1, $t1
 incr_punt:
 
@@ -37,7 +40,12 @@ incr_punt:
 MatMul:
 
 	li $t0, 0   	#i
-_loopI: li $t1, 0	#j
+	li $t1, 0	#j
+	add $t5,$zero,$a1
+	add $t4,$zero,$a0
+	j Primera_Iteracion
+		
+_loopI: 
 _loopJ:	li $t3, 0 	#c[i][j]
 	li $t2, 0	#k
 _loopK: #calculamos dirección a[i][k] y cargamos el dato
@@ -49,6 +57,7 @@ _loopK: #calculamos dirección a[i][k] y cargamos el dato
 	sll $t5, $t5, 2		#(k*N+j)*4
 	add $t4, $t4, $a0	# A + (i*N+k)*4
 	add $t5, $t5, $a1	# A + (k*N+j)*4
+Primera_Iteracion:
 	lw $t4, 0($t4)
 	#calculamos dirección b[k][j] y cargamos el dato
 	
@@ -68,5 +77,6 @@ _loopK: #calculamos dirección a[i][k] y cargamos el dato
 	
 	bne $t1, $a3, _loopJ
 	addi $t0, $t0, 1
+	li $t1, 0	#j
 	bne $t0, $a3, _loopI
 	jr $ra
