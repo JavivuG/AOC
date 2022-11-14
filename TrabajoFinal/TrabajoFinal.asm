@@ -2,14 +2,15 @@
 .text
 Epoch:
 	
-	addi $sp,$sp,-24
+	addi $sp,$sp,-28
 	sw $s1,0($sp)
 	sw $s2,4($sp)
 	sw $s3,8($sp)
 	sw $s4,12($sp)
 	sw $s5,16($sp)
 	sw $s6,20($sp)
-	sw $ra,24($sp)
+	sw $s7,24($sp)
+	sw $ra,28($sp)
 	#Llamada a atoi para convertir la cadena a entero
 	#Esta atoi estara modificada para que para que finalice cuando se encuentre ":" asi podremos ir obteniendo los distintos valores de la hora,minutos y segundos
 	#Ademas emplearemos el registro $v2 para que devuelva la nueva direccion de la cadena, ya que primero leeremos la hora, luego minutos y por ultimo segundos
@@ -76,10 +77,49 @@ Epoch:
 	j CalculoIntervalo
 	Bisiesto:
 	slt $t1,$s4,30
+	add $s7,$zero,$zero
+	slt $t2,$s5,2#Comprobamos si el mes en caso de ser año bisiesto es mayor que 2 para tenerlo en cuenta luego en el calculo del intervalo
+	bne $t2,$zero,NoSumaUno
+	addi $s7,$s7,1
+NoSumaUno:	
 	beq $t1,$zero,FechaInvalida
 	
 	CalculoIntervalo:
-	#Aqui realizaremos los calculos para obtener el tiempo que ha transurrido y devolver la cadena de caracteres correspondiente a ese tiempo en segundos
+	addi $t0,$zero,60
+	addi $t1,$zero,3600
+	addi $t2,$zero,2592000
+	addi $t3,$t3,86400
+	addi $t4,$t4,31536000
+	mul $s2,$s2,$t0
+	mul $s1,$s1,$t1
+	add $s3,$s3,$s2
+	add $s3,$s3,$s1
+	#suponiendo que en $s5 este el numero de mes
+	addi $s5,$s5,-1
+	mul $s5,$s5,$t2
+	mul $s4,$s4,$t3
+	add $s4,$s4,$s5
+	addi $t5,$s6,-1970
+	add $s3,$s4,$s3
+	mul $t5,$t5,$t4
+	add $s3,$s3,$t5
+	#ahora tenemos que calcular el numero de años bisiestos
+	addi $t9,$s6,-1972
+	addi $t6,$zero,4
+	div $s6,$t6
+	mfhi $t7
+	mflo $t8
+	beq $t7,$zero,NoSuma
+	addi $t8,$t8,1
+NoSuma:
+	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
+	add $t8,$t8,$s7
+	mul $t8,$t8,$t3
+	
+	add $s3,$s3,$t8 #resultado final en segundos
+		 
+	
+	
 	
 	#Para devolverlo como una cadena de caracteres utilizaremos la funcion itoa diseñada en una de las practicas anteriores
 	
@@ -102,8 +142,9 @@ Epoch:
 	lw $s4,12($sp)
 	lw $s5,16($sp)
 	lw $s6,20($sp)
-	lw $ra,24($sp)
-	addi $sp,$sp,24
+	lw $s7,24($sp)
+	lw $ra,28($sp)
+	addi $sp,$sp,28
 	jr $ra
 
 
