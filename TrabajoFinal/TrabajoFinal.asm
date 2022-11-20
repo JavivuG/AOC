@@ -1,8 +1,8 @@
 .data
+Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 .text
 Epoch:
-	
-	addi $sp,$sp,-28
+	addi $sp,$sp,-32
 	sw $s1,0($sp)
 	sw $s2,4($sp)
 	sw $s3,8($sp)
@@ -15,20 +15,34 @@ Epoch:
 	#Esta atoi estara modificada para que para que finalice cuando se encuentre ":" asi podremos ir obteniendo los distintos valores de la hora,minutos y segundos
 	#Ademas emplearemos el registro $v2 para que devuelva la nueva direccion de la cadena, ya que primero leeremos la hora, luego minutos y por ultimo segundos
 	#suponiendo que el valor de la hora esta en $s1
+	
+	#Comienzo
+	move $s7, $a1
+	jal atoi
+	move $s1, $v0
+	move $a0, $v1
 	slti $t1,$s1,24
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s1
-		bne $t1,$zero,FormatoHoraInvalido
+	slt $t1,$zero,$s1
+	beq $t1,$zero,FormatoHoraInvalido
+		
 	#suponiendo que en $s2 estan los minutos
+	jal atoi
+	move $s2, $v0
+	move $a0, $v1
 	slti $t1,$s2,60
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s2
-		bne $t1,$zero,FormatoHoraInvalido
+	slt $t1,$zero,$s2
+	beq $t1,$zero,FormatoHoraInvalido
+		
 	#suponiendo que en $s3 estan los segundos
+	jal atoi
+	move $s3, $v0
+	move $a0, $v1
 	slti $t1,$s3,60
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s3
-		bne $t1,$zero,FormatoHoraInvalido
+	slt $t1,$zero,$s3
+	beq $t1,$zero,FormatoHoraInvalido
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
@@ -36,125 +50,174 @@ Epoch:
 	#Esa modificacion de atoi tadavia no esta realizada, ademas utilizaremos $v2 de la misma manera que hacemos en la lectura de la hora
 	#Suponiendo que $s6 contiene el valor del año
 	#Primero veremos que valor la corresponde
-	slti $t1,$s6,99
-	beq $t1,$zero,AñoSiglo21
+	
+	# Guardo el dia en $s4
+	jal atoi
+	move $s4, $v0
+	move $a0, $v1
+	
+	#Obtengo el mes
+	la $t1, Mes
+	addi $s5, $zero, 1
+	BucleMes:
+		lb $t0, 0($t1)
+		lb $t3, 0($a0)
+		slti $t2, $s5,12
+		beq $t2, $zero, FechaInvalida
+		bne $t0, $t3, SiguientePrimeraVez
+		addi $a0, $a0, 1
+		addi $t1, $t1, 1
+		lb $t0, 0($t1)
+		lb $t3, 0($a0)
+		bne $t0, $t3, SiguienteSegundaVez
+		addi $a0, $a0, 1
+		addi $t1, $t1, 1
+		lb $t0, 0($t1)
+		lb $t3, 0($a0)
+		bne $t0, $t3, SiguienteTerceraVez
+		j ObtenidoMes
+		
+		SiguientePrimeraVez:
+			addi $t1, $t1, 3
+			addi $s5, $s5, 1
+			j BucleMes
+		SiguienteSegundaVez:
+			addi $t1, $t1, 2
+			addi $s5, $s5, 1
+			addi $a0, $a0, -1
+			j BucleMes
+		SiguienteTerceraVez:
+			addi $t1, $t1, 1
+			addi $s5, $s5, 1
+			addi $a0, $a0, -2
+			j BucleMes
+	
+	# Ya tengo el mes en $s5
+	ObtenidoMes:
+		addi $a0, $a0, 2
+		#Obtengo el anyo
+		jal atoi
+		slti $t1,$v0,99 # Anyo en $v0
+		beq $t1,$zero,AñoSiglo21
 		addi $t2,$zero,70
-		slt $t1,$t2,$s6
-		bne $t1,$zero,AñoSiglo21
-		addi $s6,$s6,1900
+		slt $t1,$t2,$v0		
+		beq $t1,$zero,AñoSiglo21
+		addi $v0,$v0,1900
+		
 	AñoSiglo21:
-	slti $t1,$s6,101
-	beq $t1,$zero,AñoCuatroCifras
-	addi $s6,$s6,2000
+		slti $t1,$v0,101
+		beq $t1,$zero,AñoCuatroCifras
+		addi $v0,$v0,2000
 	AñoCuatroCifras:
-	slti $t1,$s6,2101
-	beq $t1,$zero,FechaInvalida
-	addi $t2,$zero,1970
-	slt $t1,$t2,$s6
-	bne $t1,$zero,FechaInvalida
+		slti $t1,$v0,2101
+		beq $t1,$zero,FechaInvalida
+		addi $t2,$zero,1970
+		slt $t1,$t2,$v0
+		beq $t1,$zero,FechaInvalida
 	
-	#Aqui obtendremos el mes correspondiente
 	#Tambien comprobaremos que el mes sea correcto
-	
-	slt $t1,$zero,$s4
-	bne $t1,$zero,FechaInvalida
+
 	#En funcion del mes que sea y suponiendo que $s4 se encuentra el dia
+	slt $t1,$zero,$s4
+	beq $t1,$zero,FechaInvalida
 	Meses31:
-	slt $t1,$s4,32
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
+		slti $t1,$s4,32
+		beq $t1,$zero,FechaInvalida
+		j CalculoIntervalo
+		
 	Meses30:
-	slt $t1,$s4,31
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
+		slti $t1,$s4,31
+		beq $t1,$zero,FechaInvalida
+		j CalculoIntervalo
+		
 	Febrero:
-	beq $s6,2100,NoBisiesto 
-	andi $t2,$s6,3 #Determinamos si el año es bisiesto	
-	beq $t2,$zero,Bisiesto
+		beq $v0,2100,NoBisiesto 
+		andi $t2,$v0,3 #Determinamos si el año es bisiesto	
+		beq $t2,$zero,Bisiesto
+		
 	NoBisiesto:
-	slt $t1,$s4,29
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
+		slti $t1,$s4,29
+		beq $t1,$zero,FechaInvalida
+		j CalculoIntervalo
 	Bisiesto:
-	slt $t1,$s4,30
-	add $s7,$zero,$zero
-	slt $t2,$s5,2#Comprobamos si el mes en caso de ser año bisiesto es mayor que 2 para tenerlo en cuenta luego en el calculo del intervalo
-	bne $t2,$zero,NoSumaUno
-	addi $s7,$s7,1
+		slti $t1,$s4,30
+		add $s6,$zero,$zero
+		slti $t2,$s5,2#Comprobamos si el mes en caso de ser año bisiesto es mayor que 2 para tenerlo en cuenta luego en el calculo del intervalo
+		bne $t2,$zero,NoSumaUno
+		addi $s6,$s6,1
+	
 NoSumaUno:	
 	beq $t1,$zero,FechaInvalida
 	
 	CalculoIntervalo:
-	addi $t0,$zero,60
-	addi $t1,$zero,3600
-	addi $t2,$zero,2592000
-	addi $t3,$t3,86400
-	addi $t4,$t4,31536000
-	mul $s2,$s2,$t0
-	mul $s1,$s1,$t1
-	add $s3,$s3,$s2
-	add $s3,$s3,$s1
-	#suponiendo que en $s5 este el numero de mes
-	addi $s5,$s5,-1
-	mul $s5,$s5,$t2
-	mul $s4,$s4,$t3
-	add $s4,$s4,$s5
-	addi $t5,$s6,-1970
-	add $s3,$s4,$s3
-	mul $t5,$t5,$t4
-	add $s3,$s3,$t5
-	#ahora tenemos que calcular el numero de años bisiestos
-	addi $t9,$s6,-1972
-	addi $t6,$zero,4
-	div $s6,$t6
-	mfhi $t7
-	mflo $t8
-	beq $t7,$zero,NoSuma
-	addi $t8,$t8,1
+		addi $t0,$zero,60
+		addi $t1,$zero,3600
+		addi $t2,$zero,2592000
+		addi $t3,$zero,86400
+		addi $t4,$zero,31536000
+		mul $s2,$s2,$t0
+		mul $s1,$s1,$t1
+		add $s3,$s3,$s2
+		add $s3,$s3,$s1
+		#suponiendo que en $s5 este el numero de mes
+		addi $s5,$s5,-1
+		mul $s5,$s5,$t2
+		mul $s4,$s4,$t3
+		add $s4,$s4,$s5
+		addi $t5,$v0,-1970
+		add $s3,$s4,$s3
+		mul $t5,$t5,$t4
+		add $s3,$s3,$t5
+		#ahora tenemos que calcular el numero de años bisiestos
+		addi $t9,$v0,-1972
+		addi $t6,$zero,4
+		divu $t9,$t6
+		mfhi $t7
+		mflo $t8
+		beq $t7,$zero,NoSuma
+		addi $t8,$t8,1
 NoSuma:
 	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
-	add $t8,$t8,$s7
+	add $t8,$t8,$s6
 	mul $t8,$t8,$t3
 	
-	add $s3,$s3,$t8 #resultado final en segundos
-		 
-	
-	
-	
+	add $a0,$s3,$t8 #resultado final en segundos
+	addi $a0, $a0, -91584000
+	addi $a1, $zero, 1
+	move $a2, $s7
+	jal itoa
+	j TodoCorrectoPrincipal
+
 	#Para devolverlo como una cadena de caracteres utilizaremos la funcion itoa diseñada en una de las practicas anteriores
-	
-	
-	
-		
-	
+
 	FechaInvalida:
 		li $v0,1
+		j ExitEpoch
 	
 	FormatoHoraInvalido:
 		li $v0,2
+		j ExitEpoch
 	
+	TodoCorrectoPrincipal:
+		li $v0, 0
+		move $a1, $s7
+		move $a1,$a2
 	
-	
-	
-	lw $s1,0($sp)
-	lw $s2,4($sp)
-	lw $s3,8($sp)
-	lw $s4,12($sp)
-	lw $s5,16($sp)
-	lw $s6,20($sp)
-	lw $s7,24($sp)
-	lw $ra,28($sp)
-	addi $sp,$sp,28
-	jr $ra
-
-
-
+	ExitEpoch:
+		lw $s1,0($sp)
+		lw $s2,4($sp)
+		lw $s3,8($sp)
+		lw $s4,12($sp)
+		lw $s5,16($sp)
+		lw $s6,20($sp)
+		lw $s7,24($sp)
+		lw $ra,28($sp)
+		addi $sp,$sp,32
+		jr $ra
 
 
 #A continuacion se incluye la funcion atoi que utilizaremos para convertir los datos pasados por cadena de caracteres a enteros
 #Aun hay que realizar algunas modificaciones para que se adapte mejor a este nuevo programa
-.data
-.text
 atoi:
 	addi $t4,$zero,32
 	Espacios:	
@@ -163,12 +226,11 @@ atoi:
 		beq $t1,$t4,Espacios
 		
 	FinEspacios:
-	
-	add $v0,$zero,$zero
-	addi $t4, $zero, 10
-	addi $t2,$zero,58
-	addi $t5,$zero,47
-	addi $a1,$zero,0x0ccccccd
+		add $v0,$zero,$zero
+		addi $t4, $zero, 10
+		addi $t2,$zero,58
+		addi $t5,$zero,47
+		addi $a1,$zero,0x0ccccccd
 		
 		beq $t1, 45, Negativo #Comprobamos si el primer elemento es el signo -, de modo que el numero seria negativo 
 		bne $t1,43,SignoMas #Comprobamos si es el signo +
@@ -176,9 +238,6 @@ atoi:
 			lb $t1,0($a0)
 			addi $a0,$a0,1
 	SignoMas:
-			
-			
-
 			slt $t8,$t1,$t2
 	
 			slt $t9,$t5,$t1
@@ -212,7 +271,6 @@ atoi:
 		j Positivo
 	
 	Comprobacion:#Comprobamos si el caracter es valido
-		
 		beq $t9, $zero, ErrorCaracter
 		addi $t1, $t1, -48
 	 	j Sigo3
@@ -257,17 +315,14 @@ atoi:
 		bne $t6,-1,Positivo
 		mul $v0,$v0,$t6
 	Positivo:
-		li $v1,0
+		move $v1, $a0 # Devuelvo direccion de la cadena
 	
 	Exit_atoi:
 		jr $ra
 
 #A continuacion se incluye la funcion itoa que emplearemos para devolver el resultado como cadena de caracteres en la direccion marcada por $a1
 #Aun hay que hacer algunas modificaciones para que se adapte mejor a este programa
-.data
-.text
 itoa:
-
 	addi $t9, $zero, 2
 	div $a1, $t9
 	mfhi $t0 # Resto 
@@ -275,7 +330,6 @@ itoa:
 	blt $t0,$zero,bits321 #Si el resto es negativo significa que el parametro a1 es negativo, por ello lo tomaremos como si fuese un 0
 	blt $t1,3,a1Valido #Comprueba si el valor de a1 esta entre los especificados
 	j bits321 #En caso contrario salta a la opcion por defecto
-	
 	
 a1Valido:
 	beq $t0, $zero, Par
@@ -331,12 +385,10 @@ a1Valido:
 			blt $t6, $a2, Exit # Condicion de acabado
 			j Bucle1
 		
-	
 	Par: # Complemento a 2
 		#Seleccionamos el modo correcto
 		beq $t1, $zero, bits321
 		beq  $t1, 1, bits161
-		
 		
 		bits81:
 			andi $t3, $a0, 255
@@ -354,10 +406,6 @@ a1Valido:
 			ori $t3,$t3,0x00000080
 			j Bucle
 			
-			Positivo8:
-			
-			Negativo8:
-			
 		bits161:
 			andi $t3, $a0, 65535
 			andi $t1,$a0,0x00008000
@@ -374,11 +422,6 @@ a1Valido:
 			ori $t3,$t3,0x00008000
 			
 			j Bucle
-			
-			
-			Positivo16:
-			
-			Negativo16:
 		
 		bits321:
 			andi $t1,$a0,0x80000000
@@ -393,7 +436,9 @@ a1Valido:
 			addi $t3,$t3,1
 			andi $t3,$t3,0x7fffffff
 			bne $t3,$zero,Bucle	#Ahora que el valor es positivo 
-Overflow:		#Caso extremo en el cual recibe el -2^31 cuyo opuesto no se puede representar, ya que ocupa mas de 32 bits
+			
+		Overflow:		
+			#Caso extremo en el cual recibe el -2^31 cuyo opuesto no se puede representar, ya que ocupa mas de 32 bits
 			#Como se trata de un unico caso aislado lo resolvemos directamente almacenando los caracteres correspondientes
 			#Hemos considerado esta manera, ya que al ser un unico caso es mas eficiente (menos instrucciones) que evaluarlo con un bucle como hacemos con el resto
 			#Ademas realizar operaciones aritmeticas con este valor conlleva un gran riesgo de desbordamiento
@@ -418,11 +463,5 @@ Overflow:		#Caso extremo en el cual recibe el -2^31 cuyo opuesto no se puede rep
 			addi $t1,$zero,'8'
 			sb $t1, 9($a2)
 			sb $zero, 10($a2)
-			
-			
-			
-			
-			
 	Exit:
 		jr $ra
-				
