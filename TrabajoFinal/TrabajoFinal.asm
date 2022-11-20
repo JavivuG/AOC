@@ -182,7 +182,7 @@ NoSuma:
 	mul $t8,$t8,$t3
 	
 	add $a0,$s3,$t8 #resultado final en segundos
-	addi $a0, $a0, -91584000
+	addi $a0,$a0,-91670400
 	addi $a1, $zero, 1
 	move $a2, $s7
 	jal itoa
@@ -200,7 +200,6 @@ NoSuma:
 	
 	TodoCorrectoPrincipal:
 		li $v0, 0
-		move $a1, $s7
 		move $a1,$a2
 	
 	ExitEpoch:
