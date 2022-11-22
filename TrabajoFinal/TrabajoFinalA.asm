@@ -52,10 +52,13 @@ Epoch:
 	GMT:
 		addi $a0, $a0, 3
 		jal atoi
-		move $t3, $v0
+		slti $t3, $v0, -12
+		bne $t3, $zero, HusoInvalido
+		slti $t3, $v0, 13
+		beq $t3, $zero, HusoInvalido
 		move $a0, $v1
 		addi $t2, $zero, 24
-		add $s1, $s1, $t3
+		add $s1, $s1, $v0
 		div $s1, $t2
 		mfhi $s1
 		
@@ -79,7 +82,7 @@ Epoch:
 	BucleMes:
 		lb $t0, 0($t1)
 		lb $t3, 0($a0)
-		slti $t2, $s5,12
+		slti $t2, $s5,13
 		beq $t2, $zero, FechaInvalida
 		bne $t0, $t3, SiguientePrimeraVez
 		addi $a0, $a0, 1
@@ -259,6 +262,10 @@ Calculos:
 	
 	FormatoHoraInvalido:
 		li $v0,2
+		j ExitEpoch
+	
+	HusoInvalido:
+		li $v0, 4
 		j ExitEpoch
 	
 	TodoCorrectoPrincipal:
