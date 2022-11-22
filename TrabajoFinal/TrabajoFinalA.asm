@@ -3,7 +3,7 @@ Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 .text
 Epoch:
 	
-	addi $sp,$sp,-28
+	addi $sp,$sp,-32
 	sw $s1,0($sp)
 	sw $s2,4($sp)
 	sw $s3,8($sp)
@@ -11,13 +11,13 @@ Epoch:
 	sw $s5,16($sp)
 	sw $s6,20($sp)
 	sw $s7,24($sp)
-	sw $ra,28($sp)	
+	sw $ra,28($sp)
 	#Llamada a atoi para convertir la cadena a entero
 	#Esta atoi estara modificada para que para que finalice cuando se encuentre ":" asi podremos ir obteniendo los distintos valores de la hora,minutos y segundos
 	#Ademas emplearemos el registro $v2 para que devuelva la nueva direccion de la cadena, ya que primero leeremos la hora, luego minutos y por ultimo segundos
 	#suponiendo que el valor de la hora esta en $s1
-	
 	#Comienzo
+	add $s6,$zero,$zero
 	move $s7, $a1
 	jal atoi
 	move $s1, $v0
@@ -46,6 +46,20 @@ Epoch:
 		beq $t1,$zero,FormatoHoraInvalido
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
+	lb $t1, 0($a0)
+	bne $t1, 71, NoHayGMT
+	
+	GMT:
+		addi $a0, $a0, 3
+		jal atoi
+		move $t3, $v0
+		move $a0, $v1
+		addi $t2, $zero, 24
+		add $s1, $s1, $t3
+		div $s1, $t2
+		mfhi $s1
+		
+		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
 	#Para la lectura de los meses lo tendremos que hacer de forma distinta, ya que vienen expresados con letra
 	#Esa modificacion de atoi tadavia no esta realizada, ademas utilizaremos $v2 de la misma manera que hacemos en la lectura de la hora
@@ -53,6 +67,7 @@ Epoch:
 	#Primero veremos que valor la corresponde
 	
 	# Guardo el dia en $s4
+	NoHayGMT:
 	jal atoi
 	move $s4, $v0
 	move $a0, $v1
@@ -115,7 +130,9 @@ Epoch:
 	addi $t2,$zero,1970
 	slt $t1,$t2,$v0
 	beq $t1,$zero,FechaInvalida
-	
+	bne $v0,2100,NoLimite
+	addi $s6,$s6,-1
+NoLimite:
 
 		
 	#Tambien comprobaremos que el mes sea correcto
@@ -131,7 +148,7 @@ Epoch:
 	slti $t1,$s4,31
 	beq $t1,$zero,FechaInvalida
 	j CalculoIntervalo
-	Febrero:
+	FebreroAnyo:
 	beq $v0,2100,NoBisiesto 
 	andi $t2,$v0,3 #Determinamos si el año es bisiesto	
 	beq $t2,$zero,Bisiesto
@@ -149,6 +166,55 @@ NoSumaUno:
 	beq $t1,$zero,FechaInvalida
 	
 	CalculoIntervalo:
+Enero:	
+	bne $s5,1,Febrero
+	add $s5,$zero,$zero
+	j Calculos
+Febrero:
+	bne $s5,2,Marzo
+	addi $s5,$zero,31
+	j Calculos
+Marzo:	
+	bne $s5,3,Abril
+	addi $s5,$zero,59
+	j Calculos
+Abril:	
+	bne $s5,4,Mayo
+	addi $s5,$zero,90
+	j Calculos
+Mayo:	
+	bne $s5,5,Junio
+	addi $s5,$zero,120
+	j Calculos
+Junio:	
+	bne $s5,6,Julio
+	addi $s5,$zero,151
+	j Calculos
+Julio:	
+	bne $s5,7,Agosto
+	addi $s5,$zero,181
+	j Calculos
+Agosto:	
+	bne $s5,8,Septiembre
+	addi $s5,$zero,212
+	j Calculos
+Septiembre:	
+	bne $s5,9,Octubre
+	addi $s5,$zero,243
+	j Calculos
+Octubre:	
+	bne $s5,10,Noviembre
+	addi $s5,$zero,273
+	j Calculos
+Noviembre:	
+	bne $s5,11,Diciembre
+	addi $s5,$zero,304
+	j Calculos
+Diciembre:	
+	bne $s5,12,Calculos
+	addi $s5,$zero,334
+	
+Calculos:
 	addi $t0,$zero,60
 	addi $t1,$zero,3600
 	addi $t2,$zero,2592000
@@ -159,8 +225,7 @@ NoSumaUno:
 	add $s3,$s3,$s2
 	add $s3,$s3,$s1
 	#suponiendo que en $s5 este el numero de mes
-	addi $s5,$s5,-1
-	mul $s5,$s5,$t2
+	mul $s5,$s5,$t3
 	mul $s4,$s4,$t3
 	add $s4,$s4,$s5
 	addi $t5,$v0,-1970
@@ -173,9 +238,7 @@ NoSumaUno:
 	divu $t9,$t6
 	mfhi $t7
 	mflo $t8
-	beq $t7,$zero,NoSuma
-	addi $t8,$t8,1
-NoSuma:
+
 	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
 	add $t8,$t8,$s6
 	mul $t8,$t8,$t3
@@ -210,7 +273,7 @@ NoSuma:
 	lw $s6,20($sp)
 	lw $s7,24($sp)
 	lw $ra,28($sp)
-	addi $sp,$sp,28
+	addi $sp,$sp,32
 	jr $ra
 
 

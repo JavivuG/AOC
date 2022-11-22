@@ -1,5 +1,5 @@
 .data
-A:.asciiz "18:25:33 12/JUL/90"
+A:.asciiz "18:25:33 GMT-3 12/JUL/90"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text
@@ -20,12 +20,16 @@ Epoch:
 	#suponiendo que el valor de la hora esta en $s1
 	
 	#Comienzo
+	add $s6, $zero, $zero
 	la $a0,A
 	la $a1,B
 	move $s7, $a1
+	
+	# En $s1 estan los horas
 	jal atoi
 	move $s1, $v0
 	move $a0, $v1
+	
 	slti $t1,$s1,24
 	beq $t1,$zero,FormatoHoraInvalido
 		slt $t1,$zero,$s1
@@ -50,6 +54,22 @@ Epoch:
 		beq $t1,$zero,FormatoHoraInvalido
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
+	lb $t1, 0($a0)
+	addi $a0, $a0, 3
+	bne $t1, 71, NoHayGMT
+	
+	GMT:
+		jal atoi
+		add $s1, $s1, $v0
+		move $a0, $v0
+			li $v0, 1
+	syscall
+	j ExitEpoch 
+		addi $t2, $zero, 24
+		div $s1, $t2
+		mfhi $s1
+		
+		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
 	#Para la lectura de los meses lo tendremos que hacer de forma distinta, ya que vienen expresados con letra
 	#Esa modificacion de atoi tadavia no esta realizada, ademas utilizaremos $v2 de la misma manera que hacemos en la lectura de la hora
@@ -57,6 +77,7 @@ Epoch:
 	#Primero veremos que valor la corresponde
 	
 	# Guardo el dia en $s4
+	NoHayGMT:
 	jal atoi
 	move $s4, $v0
 	move $a0, $v1
