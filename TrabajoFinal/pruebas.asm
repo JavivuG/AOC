@@ -1,5 +1,5 @@
 .data
-A:.asciiz "18:25:33 GMT-3 12/JUL/90"
+A:.asciiz " 18:25:33 GMT-13 12/JUL/90"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text
@@ -24,18 +24,18 @@ Epoch:
 	la $a0,A
 	la $a1,B
 	move $s7, $a1
-	
-	# En $s1 estan los horas
 	jal atoi
 	move $s1, $v0
 	move $a0, $v1
-	
 	slti $t1,$s1,24
 	beq $t1,$zero,FormatoHoraInvalido
 		slt $t1,$zero,$s1
 		beq $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s2 estan los minutos
+	lb $t1, 0($a0)
+
+	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s2, $v0
 	move $a0, $v1
@@ -45,6 +45,10 @@ Epoch:
 		beq $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s3 estan los segundos
+	lb $t1, 0($a0)
+
+	
+	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s3, $v0
 	move $a0, $v1
@@ -55,17 +59,24 @@ Epoch:
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
 	lb $t1, 0($a0)
-	addi $a0, $a0, 3
 	bne $t1, 71, NoHayGMT
 	
 	GMT:
+		addi $a0, $a0, 3
+		lb $t1, 0($a0)
+		beq $t1, 32, NoHayGMT1
 		jal atoi
+		slti $t3, $v0, -12
+		bne $t3, $zero, HusoInvalido
+		slti $t3, $v0, 13
+		beq $t3, $zero, HusoInvalido
+		move $a0, $v1
+		addi $t2, $zero, 24
 		add $s1, $s1, $v0
 		move $a0, $v0
-			li $v0, 1
-	syscall
-	j ExitEpoch 
-		addi $t2, $zero, 24
+		li $v0, 1
+		syscall
+		j ExitEpoch
 		div $s1, $t2
 		mfhi $s1
 		
@@ -77,6 +88,8 @@ Epoch:
 	#Primero veremos que valor la corresponde
 	
 	# Guardo el dia en $s4
+	NoHayGMT1:
+		addi $a0, $a0, 1
 	NoHayGMT:
 	jal atoi
 	move $s4, $v0
@@ -89,7 +102,7 @@ Epoch:
 	BucleMes:
 		lb $t0, 0($t1)
 		lb $t3, 0($a0)
-		slti $t2, $s5,12
+		slti $t2, $s5,13
 		beq $t2, $zero, FechaInvalida
 		bne $t0, $t3, SiguientePrimeraVez
 		addi $a0, $a0, 1
@@ -140,7 +153,9 @@ Epoch:
 	addi $t2,$zero,1970
 	slt $t1,$t2,$v0
 	beq $t1,$zero,FechaInvalida
-	
+	bne $v0,2100,NoLimite
+	addi $s6,$s6,-1
+NoLimite:
 
 		
 	#Tambien comprobaremos que el mes sea correcto
@@ -156,7 +171,7 @@ Epoch:
 	slti $t1,$s4,31
 	beq $t1,$zero,FechaInvalida
 	j CalculoIntervalo
-	Febrero:
+	FebreroAnyo:
 	beq $v0,2100,NoBisiesto 
 	andi $t2,$v0,3 #Determinamos si el año es bisiesto	
 	beq $t2,$zero,Bisiesto
@@ -174,6 +189,55 @@ NoSumaUno:
 	beq $t1,$zero,FechaInvalida
 	
 	CalculoIntervalo:
+Enero:	
+	bne $s5,1,Febrero
+	add $s5,$zero,$zero
+	j Calculos
+Febrero:
+	bne $s5,2,Marzo
+	addi $s5,$zero,31
+	j Calculos
+Marzo:	
+	bne $s5,3,Abril
+	addi $s5,$zero,59
+	j Calculos
+Abril:	
+	bne $s5,4,Mayo
+	addi $s5,$zero,90
+	j Calculos
+Mayo:	
+	bne $s5,5,Junio
+	addi $s5,$zero,120
+	j Calculos
+Junio:	
+	bne $s5,6,Julio
+	addi $s5,$zero,151
+	j Calculos
+Julio:	
+	bne $s5,7,Agosto
+	addi $s5,$zero,181
+	j Calculos
+Agosto:	
+	bne $s5,8,Septiembre
+	addi $s5,$zero,212
+	j Calculos
+Septiembre:	
+	bne $s5,9,Octubre
+	addi $s5,$zero,243
+	j Calculos
+Octubre:	
+	bne $s5,10,Noviembre
+	addi $s5,$zero,273
+	j Calculos
+Noviembre:	
+	bne $s5,11,Diciembre
+	addi $s5,$zero,304
+	j Calculos
+Diciembre:	
+	bne $s5,12,Calculos
+	addi $s5,$zero,334
+	
+Calculos:
 	addi $t0,$zero,60
 	addi $t1,$zero,3600
 	addi $t2,$zero,2592000
@@ -184,8 +248,7 @@ NoSumaUno:
 	add $s3,$s3,$s2
 	add $s3,$s3,$s1
 	#suponiendo que en $s5 este el numero de mes
-	addi $s5,$s5,-1
-	mul $s5,$s5,$t2
+	mul $s5,$s5,$t3
 	mul $s4,$s4,$t3
 	add $s4,$s4,$s5
 	addi $t5,$v0,-1970
@@ -198,9 +261,7 @@ NoSumaUno:
 	divu $t9,$t6
 	mfhi $t7
 	mflo $t8
-	beq $t7,$zero,NoSuma
-	addi $t8,$t8,1
-NoSuma:
+
 	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
 	add $t8,$t8,$s6
 	mul $t8,$t8,$t3
@@ -223,11 +284,12 @@ NoSuma:
 		li $v0,2
 		j ExitEpoch
 	
+	HusoInvalido:
+		li $v0, 4
+		j ExitEpoch
+	
 	TodoCorrectoPrincipal:
 		li $v0, 0
-		move $a0,$s7
-		li $v0,4
-		syscall
 	
 	ExitEpoch:
 	lw $s1,0($sp)
@@ -238,9 +300,8 @@ NoSuma:
 	lw $s6,20($sp)
 	lw $s7,24($sp)
 	lw $ra,28($sp)
-	addi $sp,$sp,28
-	
-	li $v0,10
+	addi $sp,$sp,32
+	li $v0, 10
 	syscall
 	jr $ra
 
@@ -524,5 +585,4 @@ Overflow:		#Caso extremo en el cual recibe el -2^31 cuyo opuesto no se puede rep
 		jr $ra
 				
 		
-				
-		
+	
