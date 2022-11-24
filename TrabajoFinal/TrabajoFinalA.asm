@@ -56,6 +56,8 @@ Epoch:
 	
 	GMT:
 		addi $a0, $a0, 3
+		lb $t1, 0($a0)
+		beq $t1, 32, NoHayGMT1
 		jal atoi
 		slti $t3, $v0, -12
 		bne $t3, $zero, HusoInvalido
@@ -75,6 +77,8 @@ Epoch:
 	#Primero veremos que valor la corresponde
 	
 	# Guardo el dia en $s4
+	NoHayGMT1:
+		add $a0, $a0, 1
 	NoHayGMT:
 		jal atoi
 		move $s4, $v0
