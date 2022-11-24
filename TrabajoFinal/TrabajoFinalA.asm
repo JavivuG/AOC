@@ -19,6 +19,7 @@ Epoch:
 	#Comienzo
 	add $s6,$zero,$zero
 	move $s7, $a1
+	
 	jal atoi
 	move $s1, $v0
 	move $a0, $v1
@@ -28,6 +29,8 @@ Epoch:
 		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s2 estan los minutos
+	lb $t1, 0($a0)
+	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s2, $v0
 	move $a0, $v1
@@ -37,6 +40,8 @@ Epoch:
 		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s3 estan los segundos
+	lb $t1, 0($a0)
+	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s3, $v0
 	move $a0, $v1
