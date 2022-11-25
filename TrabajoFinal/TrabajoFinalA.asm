@@ -63,6 +63,8 @@ Epoch:
 		bne $t3, $zero, HusoInvalido
 		slti $t3, $v0, 13
 		beq $t3, $zero, HusoInvalido
+		addi $t1, $zero, -1
+		mul $v0, $v0, $t1 
 		move $a0, $v1
 		addi $t2, $zero, 24
 		add $s1, $s1, $v0
