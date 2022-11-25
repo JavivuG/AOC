@@ -1,5 +1,5 @@
 .data
-A:.asciiz " 18:25:33 GMT-13 12/JUL/90"
+A:.asciiz " 16:25:33 GMT-12 05/JUL/90"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text
@@ -23,39 +23,44 @@ Epoch:
 	add $s6, $zero, $zero
 	la $a0,A
 	la $a1,B
+	add $s4, $zero, $zero
+	add $s6,$zero,$zero
 	move $s7, $a1
+	
 	jal atoi
 	move $s1, $v0
 	move $a0, $v1
 	slti $t1,$s1,24
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s1
-		beq $t1,$zero,FormatoHoraInvalido
+		slt $t1,$s1,$zero
+		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s2 estan los minutos
+	lb $t1, -1($a0)
+	move $a0, $t1
+	li $v0, 1
+	syscall
+	j ExitEpoch 
 	lb $t1, 0($a0)
-
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s2, $v0
 	move $a0, $v1
 	slti $t1,$s2,60
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s2
-		beq $t1,$zero,FormatoHoraInvalido
+		slt $t1,$s2,$zero
+		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s3 estan los segundos
 	lb $t1, 0($a0)
-
-	
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
 	move $s3, $v0
 	move $a0, $v1
 	slti $t1,$s3,60
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$zero,$s3
-		beq $t1,$zero,FormatoHoraInvalido
+		slt $t1,$s3,$zero
+		bne $t1,$zero,FormatoHoraInvalido
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
 	lb $t1, 0($a0)
@@ -70,15 +75,18 @@ Epoch:
 		bne $t3, $zero, HusoInvalido
 		slti $t3, $v0, 13
 		beq $t3, $zero, HusoInvalido
+		addi $t1, $zero, -1
+		mul $v0, $v0, $t1 
 		move $a0, $v1
 		addi $t2, $zero, 24
 		add $s1, $s1, $v0
-		move $a0, $v0
-		li $v0, 1
-		syscall
-		j ExitEpoch
 		div $s1, $t2
 		mfhi $s1
+		slti $t1, $s1, 24
+		beq $t1, $zero, SumaUno
+		slt $t1, $s1, $zero
+		bne $t1, $zero, QuitaUno
+		j NoHayGMT
 		
 		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
@@ -86,19 +94,27 @@ Epoch:
 	#Esa modificacion de atoi tadavia no esta realizada, ademas utilizaremos $v2 de la misma manera que hacemos en la lectura de la hora
 	#Suponiendo que $s6 contiene el valor del año
 	#Primero veremos que valor la corresponde
-	
+	QuitaUno:
+		add $s1, $t2, $s1
+		addi $s4, $zero, -1
+		j NoHayGMT
+		
+	SumaUno:
+		mflo $s1
+		addi $s4, $zero, 1
+		j NoHayGMT
+		
 	# Guardo el dia en $s4
 	NoHayGMT1:
-		addi $a0, $a0, 1
+		add $a0, $a0, 1
 	NoHayGMT:
-	jal atoi
-	move $s4, $v0
-	move $a0, $v1
-	
-	
-	#Obtengo el mes
-	la $t1, Mes
-	addi $s5, $zero, 1
+
+		jal atoi
+		add $s4, $v0, $s4
+		move $a0, $v1
+		#Obtengo el mes
+		la $t1, Mes
+		addi $s5, $zero, 1
 	BucleMes:
 		lb $t0, 0($t1)
 		lb $t3, 0($a0)
@@ -136,10 +152,16 @@ Epoch:
 	ObtenidoMes:
 	addi $a0, $a0, 2
 	#Obtengo el anyo
+	lb $t1, -1($a0)
+	move $a0, $t1
+	li $v0,1
+	syscall
+	j ExitEpoch
+		bne $t1, 47, FechaInvalida
 	jal atoi
-	slti $t1,$v0,99 # Anyo en $v0
+	slti $t1,$v0,100 # Anyo en $v0
 	beq $t1,$zero,AñoSiglo21
-		addi $t2,$zero,70
+		addi $t2,$zero,69
 		slt $t1,$t2,$v0
 		beq $t1,$zero,AñoSiglo21
 		addi $v0,$v0,1900
@@ -149,42 +171,58 @@ Epoch:
 	addi $v0,$v0,2000
 	AñoCuatroCifras:
 	slti $t1,$v0,2101
-	beq $t1,$zero,FechaInvalida
-	addi $t2,$zero,1970
+	beq $t1,$zero,IntervaloFechaInvalido
+	addi $t2,$zero,1969
 	slt $t1,$t2,$v0
-	beq $t1,$zero,FechaInvalida
+	beq $t1,$zero,IntervaloFechaInvalido
 	bne $v0,2100,NoLimite
 	addi $s6,$s6,-1
 NoLimite:
 
 		
-	#Tambien comprobaremos que el mes sea correcto
+		#Tambien comprobaremos que el mes sea correcto
 
-	#En funcion del mes que sea y suponiendo que $s4 se encuentra el dia
-	slt $t1,$zero,$s4
-	beq $t1,$zero,FechaInvalida
+		#En funcion del mes que sea y suponiendo que $s4 se encuentra el dia
+		slt $t1,$zero,$s4
+		beq $t1,$zero,FechaInvalida
+		beq $s5,1,Meses31
+		beq $s5,2,FebreroAnyo
+		beq $s5,3,Meses31
+		beq $s5,4,Meses30
+		beq $s5,5,Meses31
+		beq $s5,6,Meses30
+		beq $s5,7,Meses31
+		beq $s5,8,Meses31
+		beq $s5,9,Meses30
+		beq $s5,10,Meses31
+		beq $s5,11,Meses30
+		beq $s5,12,Meses31
 	Meses31:
-	slti $t1,$s4,32
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
+		slti $t1,$s4,32
+		beq $t1,$zero,FechaInvalida
+		andi $t2,$v0,3 #Determinamos si el año es bisiesto	
+		beq $t2,$zero,Bisiesto
+		j CalculoIntervalo
 	Meses30:
-	slti $t1,$s4,31
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
+		slti $t1,$s4,31
+		beq $t1,$zero,FechaInvalida
+		andi $t2,$v0,3 #Determinamos si el año es bisiesto	
+		beq $t2,$zero,Bisiesto
+		j CalculoIntervalo
 	FebreroAnyo:
-	beq $v0,2100,NoBisiesto 
-	andi $t2,$v0,3 #Determinamos si el año es bisiesto	
-	beq $t2,$zero,Bisiesto
+		beq $v0,2100,NoBisiesto 
+		andi $t2,$v0,3 #Determinamos si el año es bisiesto	
+		beq $t2,$zero,Bisiesto
 	NoBisiesto:
-	slti $t1,$s4,29
-	beq $t1,$zero,FechaInvalida
-	j CalculoIntervalo
-	Bisiesto:
-	slti $t1,$s4,30
-	add $s6,$zero,$zero
-	slti $t2,$s5,2#Comprobamos si el mes en caso de ser año bisiesto es mayor que 2 para tenerlo en cuenta luego en el calculo del intervalo
-	bne $t2,$zero,NoSumaUno
-	addi $s6,$s6,1
+		slti $t1,$s4,29
+		beq $t1,$zero,FechaInvalida
+		j CalculoIntervalo
+	FebreroBisiesto:
+		slti $t1,$s4,30
+		Bisiesto:
+		slti $t2,$s5,3#Comprobamos si el mes en caso de ser año bisiesto es mayor que 2 para tenerlo en cuenta luego en el calculo del intervalo
+		bne $t2,$zero,NoSumaUno
+		addi $s6,$s6,1
 NoSumaUno:	
 	beq $t1,$zero,FechaInvalida
 	
@@ -261,8 +299,9 @@ Calculos:
 	divu $t9,$t6
 	mfhi $t7
 	mflo $t8
-
-	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
+  	bne $t7,$zero,NoResta
+  	addi $t8,$t8,-1
+NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que tener en cuenta que el año actual es bisiesto
 	add $t8,$t8,$s6
 	mul $t8,$t8,$t3
 	
@@ -283,6 +322,10 @@ Calculos:
 	FormatoHoraInvalido:
 		li $v0,2
 		j ExitEpoch
+	
+	IntervaloFechaInvalido:
+		li $v0, 3
+		j ExitEpoch	
 	
 	HusoInvalido:
 		li $v0, 4

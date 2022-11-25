@@ -29,6 +29,8 @@ Epoch:
 		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s2 estan los minutos
+	lb $t1, -1($a0)
+	bne $t1, 58, FormatoHoraInvalido
 	lb $t1, 0($a0)
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
@@ -40,6 +42,8 @@ Epoch:
 		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s3 estan los segundos
+	lb $t1, -1($a0)
+	bne $t1, 58, FormatoHoraInvalido
 	lb $t1, 0($a0)
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
@@ -88,6 +92,8 @@ Epoch:
 	
 	
 		#Obtengo el mes
+		lb $t1, -1($a0)
+		bne $t1, 47, FechaInvalida
 		la $t1, Mes
 		addi $s5, $zero, 1
 	BucleMes:
@@ -127,6 +133,8 @@ Epoch:
 	ObtenidoMes:
 	addi $a0, $a0, 2
 	#Obtengo el anyo
+	lb $t1, -1($a0)
+	bne $t1, 47, FechaInvalida
 	jal atoi
 	slti $t1,$v0,100 # Anyo en $v0
 	beq $t1,$zero,AñoSiglo21
