@@ -1,11 +1,11 @@
 .data
-A:.asciiz " 16:25:33 GMT-12 05/JUL/90"
+A:.asciiz " 16:25:33 GMT-0 05/JUL/90"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text
 Epoch:
 	
-	addi $sp,$sp,-28
+	addi $sp,$sp,-32
 	sw $s1,0($sp)
 	sw $s2,4($sp)
 	sw $s3,8($sp)
@@ -37,10 +37,7 @@ Epoch:
 		
 	#suponiendo que en $s2 estan los minutos
 	lb $t1, -1($a0)
-	move $a0, $t1
-	li $v0, 1
-	syscall
-	j ExitEpoch 
+	bne $t1, 58, FormatoHoraInvalido
 	lb $t1, 0($a0)
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
@@ -52,6 +49,8 @@ Epoch:
 		bne $t1,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s3 estan los segundos
+	lb $t1, -1($a0)
+	bne $t1, 58, FormatoHoraInvalido
 	lb $t1, 0($a0)
 	beq $t1, 32, FormatoHoraInvalido
 	jal atoi
@@ -71,6 +70,8 @@ Epoch:
 		lb $t1, 0($a0)
 		beq $t1, 32, NoHayGMT1
 		jal atoi
+
+		
 		slti $t3, $v0, -12
 		bne $t3, $zero, HusoInvalido
 		slti $t3, $v0, 13
@@ -82,11 +83,6 @@ Epoch:
 		add $s1, $s1, $v0
 		div $s1, $t2
 		mfhi $s1
-		slti $t1, $s1, 24
-		beq $t1, $zero, SumaUno
-		slt $t1, $s1, $zero
-		bne $t1, $zero, QuitaUno
-		j NoHayGMT
 		
 		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
@@ -94,25 +90,23 @@ Epoch:
 	#Esa modificacion de atoi tadavia no esta realizada, ademas utilizaremos $v2 de la misma manera que hacemos en la lectura de la hora
 	#Suponiendo que $s6 contiene el valor del año
 	#Primero veremos que valor la corresponde
-	QuitaUno:
-		add $s1, $t2, $s1
-		addi $s4, $zero, -1
-		j NoHayGMT
-		
-	SumaUno:
-		mflo $s1
-		addi $s4, $zero, 1
-		j NoHayGMT
-		
+	
 	# Guardo el dia en $s4
 	NoHayGMT1:
 		add $a0, $a0, 1
 	NoHayGMT:
-
 		jal atoi
-		add $s4, $v0, $s4
+		move $a0, $v0
+		li $v0, 1
+		syscall
+		j ExitEpoch
+		move $s4, $v0
 		move $a0, $v1
+		
+	
 		#Obtengo el mes
+		lb $t1, -1($a0)
+		bne $t1, 47, FechaInvalida
 		la $t1, Mes
 		addi $s5, $zero, 1
 	BucleMes:
@@ -153,11 +147,7 @@ Epoch:
 	addi $a0, $a0, 2
 	#Obtengo el anyo
 	lb $t1, -1($a0)
-	move $a0, $t1
-	li $v0,1
-	syscall
-	j ExitEpoch
-		bne $t1, 47, FechaInvalida
+	bne $t1, 47, FechaInvalida
 	jal atoi
 	slti $t1,$v0,100 # Anyo en $v0
 	beq $t1,$zero,AñoSiglo21
@@ -356,6 +346,7 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 .data
 .text
 atoi:
+	addi $t6, $zero, $zero
 	addi $t4,$zero,32
 	Espacios:	
 		lb $t1,0($a0)

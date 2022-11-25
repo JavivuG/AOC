@@ -331,6 +331,7 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 .data
 .text
 atoi:
+	add $t6, $zero, $zero
 	addi $t4,$zero,32
 	Espacios:	
 		lb $t1,0($a0)
