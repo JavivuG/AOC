@@ -356,8 +356,6 @@ atoi:
 			lb $t1,0($a0)
 			addi $a0,$a0,1
 	SignoMas:
-			
-	
 			slt $t9,$t5,$t1
 
 			j Comprobacion
@@ -399,13 +397,6 @@ atoi:
 	 	addi $t6, $zero, -1
 	 	
 	 	j PrimerElemento
-	 	
-	 PosibleOverflow:#Comporbamos todos los posibles casos de overflow
-	 		beq $v0, 2147483640, CasoEspecial #Detectamos si es el caso extremo
-	 		mfhi $t7
-	 		addi $t0,$zero,0x7ffffff0
-	 		slt $t0,$v0,$t0
-			bne  $t0,$zero,Sigo3
 	 		
 	 Sigo2:
 	 		addu $t7, $v0, $t1
@@ -427,13 +418,11 @@ atoi:
 
 #A continuacion se incluye la funcion itoa que emplearemos para devolver el resultado como cadena de caracteres en la direccion marcada por $a1
 #Aun hay que hacer algunas modificaciones para que se adapte mejor a este programa
-.data
-.text
+
 itoa:
 		
-		bits32: 
-			add $t3, $a0, $zero
-			j Bucle	
+		
+		add $t3, $a0, $zero	
 		
 		Bucle:
 			#Dividimos el numero repetidas veces entre 10 y utilizamos los restos, ya que se corresponden con las cifras del numero
