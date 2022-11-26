@@ -334,13 +334,11 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 
 #A continuacion se incluye la funcion atoi que utilizaremos para convertir los datos pasados por cadena de caracteres a enteros
 #Aun hay que realizar algunas modificaciones para que se adapte mejor a este nuevo programa
-.data
-.text
 atoi:
-	add $t6, $zero, $zero
-	addi $t4,$zero,32
+	
 	Espacios:	
 		lb $t1,0($a0)
+		addi $t4,$zero,32
 		addi $a0,$a0,1
 		beq $t1,$t4,Espacios
 		
@@ -359,11 +357,9 @@ atoi:
 			addi $a0,$a0,1
 	SignoMas:
 			
-			
-
-			slt $t8,$t1,$t2
 	
 			slt $t9,$t5,$t1
+
 			j Comprobacion
 			
 		Bucle1_atoi:
@@ -375,10 +371,7 @@ atoi:
 			j ComprobacionBucle
 		Sigo:
 			mulu $v0,$v0,$t4
-			slt $t0,$v0,$zero
 			
-			slt $a2,$a1,$v0
-
 			addi $t1, $t1, -48
 
 		Sigo3:
@@ -407,14 +400,18 @@ atoi:
 	 	
 	 	j PrimerElemento
 	 	
-
+	 PosibleOverflow:#Comporbamos todos los posibles casos de overflow
+	 		beq $v0, 2147483640, CasoEspecial #Detectamos si es el caso extremo
+	 		mfhi $t7
+	 		addi $t0,$zero,0x7ffffff0
+	 		slt $t0,$v0,$t0
+			bne  $t0,$zero,Sigo3
 	 		
 	 Sigo2:
 	 		addu $t7, $v0, $t1
 			xor $t0, $v0, $t7
 			xor $t3, $t1, $t7
 			and $t0, $t0, $t3
-			slt $t0,$t0,$zero
 			add $v0,$v0,$t1
 			
 			j Bucle1_atoi
@@ -426,7 +423,6 @@ atoi:
 		move $v1, $a0 # Devuelvo direccion de la cadena
 	
 	Exit_atoi:
-
 		jr $ra
 
 #A continuacion se incluye la funcion itoa que emplearemos para devolver el resultado como cadena de caracteres en la direccion marcada por $a1
