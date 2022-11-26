@@ -335,7 +335,7 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 #A continuacion se incluye la funcion atoi que utilizaremos para convertir los datos pasados por cadena de caracteres a enteros
 #Aun hay que realizar algunas modificaciones para que se adapte mejor a este nuevo programa
 atoi:
-	
+	add $t6, $zero, $zero
 	Espacios:	
 		lb $t1,0($a0)
 		addi $t4,$zero,32
