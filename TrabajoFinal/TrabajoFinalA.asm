@@ -17,6 +17,7 @@ Epoch:
 	#Ademas emplearemos el registro $v2 para que devuelva la nueva direccion de la cadena, ya que primero leeremos la hora, luego minutos y por ultimo segundos
 	#suponiendo que el valor de la hora esta en $s1
 	#Comienzo
+	add $s4, $zero, $zero
 	add $s6,$zero,$zero
 	move $s7, $a1
 	
@@ -73,7 +74,12 @@ Epoch:
 		addi $t2, $zero, 24
 		add $s1, $s1, $v0
 		div $s1, $t2
+		move $t3, $s1
 		mfhi $s1
+		slt $t1, $t3, $t2
+		bne $t1, $zero, NoHayGMT
+		addi $s4, $zero, 1
+		j NoHayGMT
 		
 		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
@@ -87,7 +93,7 @@ Epoch:
 		add $a0, $a0, 1
 	NoHayGMT:
 		jal atoi
-		move $s4, $v0
+		add $s4, $v0, $s4
 		move $a0, $v1
 	
 	

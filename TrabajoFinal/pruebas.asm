@@ -1,5 +1,5 @@
 .data
-A:.asciiz " 16:25:33 GMT-0 05/JUL/90"
+A:.asciiz "22:38:57 GMT-4 01/DIC/95"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text
@@ -20,6 +20,7 @@ Epoch:
 	#suponiendo que el valor de la hora esta en $s1
 	
 	#Comienzo
+	add $s4, $zero, $zero
 	add $s6, $zero, $zero
 	la $a0,A
 	la $a1,B
@@ -70,8 +71,6 @@ Epoch:
 		lb $t1, 0($a0)
 		beq $t1, 32, NoHayGMT1
 		jal atoi
-
-		
 		slti $t3, $v0, -12
 		bne $t3, $zero, HusoInvalido
 		slti $t3, $v0, 13
@@ -82,8 +81,12 @@ Epoch:
 		addi $t2, $zero, 24
 		add $s1, $s1, $v0
 		div $s1, $t2
+		move $t3, $s1
 		mfhi $s1
-		
+		slt $t1, $t3, $t2
+		bne $t1, $zero, NoHayGMT
+		addi $s4, $zero, 1
+		j NoHayGMT
 		
 	#Volveremos a usar la funcion atoi pere en este caso que convierta la cadena hasta que se encuentre con "/" que es el formato que tendra la fecha
 	#Para la lectura de los meses lo tendremos que hacer de forma distinta, ya que vienen expresados con letra
@@ -96,13 +99,9 @@ Epoch:
 		add $a0, $a0, 1
 	NoHayGMT:
 		jal atoi
-		move $a0, $v0
-		li $v0, 1
-		syscall
-		j ExitEpoch
-		move $s4, $v0
+		add $s4, $v0, $s4
 		move $a0, $v1
-		
+	
 	
 		#Obtengo el mes
 		lb $t1, -1($a0)
@@ -296,6 +295,9 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 	mul $t8,$t8,$t3
 	
 	add $a0,$s3,$t8 #resultado final en segundos
+	li $v0, 1
+	syscall
+	j ExitEpoch
 	addi $a1, $zero, 1
 	move $a2, $s7
 	jal itoa
@@ -346,7 +348,7 @@ NoResta: 	#Con la comprobacion que hicimos previemente para saber si hay que ten
 .data
 .text
 atoi:
-	addi $t6, $zero, $zero
+	add $t6, $zero, $zero
 	addi $t4,$zero,32
 	Espacios:	
 		lb $t1,0($a0)
