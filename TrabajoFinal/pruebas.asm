@@ -1,5 +1,5 @@
 .data
-A:.asciiz "22:38:57 GMT-4 01/DIC/95"
+A:.asciiz "22:38:57 GMT-4 31/DIC/95"
 Mes: .asciiz "ENEFEBMARABRMAYJUNJULAGOSEPOCTNOVDIC"
 B:.space 80
 .text

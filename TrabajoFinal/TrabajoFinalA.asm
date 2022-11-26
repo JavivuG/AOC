@@ -78,6 +78,7 @@ Epoch:
 		mfhi $s1
 		slt $t1, $t3, $t2
 		bne $t1, $zero, NoHayGMT
+
 		addi $s4, $zero, 1
 		j NoHayGMT
 		
@@ -364,7 +365,6 @@ atoi:
 			slt $t8,$t1,$t2
 	
 			slt $t9,$t5,$t1
-			beq $t8,$zero,ErrorCaracter #Comprobamos si es un caracter permitido
 			j Comprobacion
 			
 		Bucle1_atoi:
@@ -379,9 +379,9 @@ atoi:
 			slt $t0,$v0,$zero
 			
 			slt $a2,$a1,$v0
-			bne $t0,$zero,ErrorOverflow #Como siempre trabajamos con numeros positivos, si aparece un numero negativo es que ha habido overflow
+
 			addi $t1, $t1, -48
-			bne $a2,$zero,PosibleOverflow #Comporbamos el overflow solo cuando este cerca de producirse
+
 		Sigo3:
 			add $v0,$v0,$t1
 
@@ -395,7 +395,6 @@ atoi:
 	
 	Comprobacion:#Comprobamos si el caracter es valido
 		
-		beq $t9, $zero, ErrorCaracter
 		addi $t1, $t1, -48
 	 	j Sigo3
 	 	
@@ -409,13 +408,7 @@ atoi:
 	 	
 	 	j PrimerElemento
 	 	
-	 PosibleOverflow:#Comporbamos todos los posibles casos de overflow
-	 		beq $v0, 2147483640, CasoEspecial #Detectamos si es el caso extremo
-	 		mfhi $t7
-	 		addi $t0,$zero,0x7ffffff0
-	 		slt $t0,$v0,$t0
-			bne $t7, $zero, ErrorOverflow
-			bne  $t0,$zero,Sigo3
+
 	 		
 	 Sigo2:
 	 		addu $t7, $v0, $t1
@@ -423,17 +416,9 @@ atoi:
 			xor $t3, $t1, $t7
 			and $t0, $t0, $t3
 			slt $t0,$t0,$zero
-			bne $t0, $zero, ErrorOverflow
 			add $v0,$v0,$t1
 			
 			j Bucle1_atoi
-	ErrorCaracter:
-		li $v1, 1
-		j Exit_atoi
-		
-	ErrorOverflow:
-		li $v1,2
-		j Exit_atoi
 	
 	TodoCorrecto:
 		bne $t6,-1,Positivo
