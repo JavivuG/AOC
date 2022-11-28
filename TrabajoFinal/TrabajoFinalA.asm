@@ -348,7 +348,6 @@ atoi:
 	addi $t4, $zero, 10
 	addi $t2,$zero,58
 	addi $t5,$zero,47
-	addi $a1,$zero,0x0ccccccd
 		
 		beq $t1, 45, Negativo #Comprobamos si el primer elemento es el signo -, de modo que el numero seria negativo 
 		bne $t1,43,SignoMas #Comprobamos si es el signo +
@@ -376,12 +375,6 @@ atoi:
 			add $v0,$v0,$t1
 
 			j Bucle1_atoi
-	
-	CasoEspecial: #Detectamos si es el caso especial y si lo es cargamos el valor correspondiente en $v0
-		bne $t6, -1, Sigo2  
-		bne $t1, 8, Sigo2
-		li $v0,0x80000000
-		j Positivo
 	
 	Comprobacion:#Comprobamos si el caracter es valido
 		
