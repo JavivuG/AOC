@@ -23,56 +23,76 @@ Epoch:
 	
 	jal atoi
 	move $s1, $v0
-	move $a0, $v1
 	slti $t1,$s1,24
+	slt $t2,$s1,$zero
+	move $a0, $v1
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$s1,$zero
-		bne $t1,$zero,FormatoHoraInvalido
+
+		bne $t2,$zero,FormatoHoraInvalido
 		
 	#suponiendo que en $s2 estan los minutos
 	lb $t1, -1($a0)
-	bne $t1, 58, FormatoHoraInvalido
-	lb $t1, 0($a0)
-	beq $t1, 32, FormatoHoraInvalido
+	addi $t3,$zero,58
+	lb $t2, 0($a0)
+	addi $t4,$zero,32
+	bne $t1, $t3, FormatoHoraInvalido
+	beq $t2, $t4, FormatoHoraInvalido
 	jal atoi
 	move $s2, $v0
-	move $a0, $v1
 	slti $t1,$s2,60
+	slt $t2,$s2,$zero
+	move $a0, $v1
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$s2,$zero
-		bne $t1,$zero,FormatoHoraInvalido
-		
+		bne $t2,$zero,FormatoHoraInvalido
 	#suponiendo que en $s3 estan los segundos
 	lb $t1, -1($a0)
-	bne $t1, 58, FormatoHoraInvalido
-	lb $t1, 0($a0)
-	beq $t1, 32, FormatoHoraInvalido
+	addi $t3,$zero,58
+	lb $t2, 0($a0)
+	addi $t4,$zero,32
+	bne $t1, $t3, FormatoHoraInvalido
+	beq $t2, $t4, FormatoHoraInvalido
 	jal atoi
 	move $s3, $v0
-	move $a0, $v1
 	slti $t1,$s3,60
+	slt $t2,$s3,$zero
+	move $a0, $v1
+	lb $t3, 0($a0)
+	lb $t5,1($a0)
+	lb $t6,2($a0)
+	addi $t7,$zero,77
+	addi $t4,$zero,71
+	addi $t8,$zero,84
 	beq $t1,$zero,FormatoHoraInvalido
-		slt $t1,$s3,$zero
-		bne $t1,$zero,FormatoHoraInvalido
+		bne $t2,$zero,FormatoHoraInvalido
 	#Aqui realizaremos el analisis del huso horario, pero todavia no esta implementado
 	
-	lb $t1, 0($a0)
-	bne $t1, 71, NoHayGMT
 	
+	bne $t3, $t4, NoHayGMT
+	bne $t5,$t7,HusoInvalido
+	bne $t6,$t8,HusoInvalido
 	GMT:
+		lb $t1, 3($a0)
+		addi $t5,$zero,32
 		addi $a0, $a0, 3
-		lb $t1, 0($a0)
-		beq $t1, 32, NoHayGMT1
+		
+		beq $t1, $t5, NoHayGMT1
+		
+		addi $t5, $zero, 43
+		bne $t1, $t5, ComprobacionGMT
+		j SigoGMT
+		
+	ComprobacionGMT:
+		addi $t5, $zero, 45
+		bne $t1, $t5, HusoInvalido
+		
+	SigoGMT:
 		jal atoi
 		slti $t3, $v0, -12
+		slti $t4, $v0, 13
 		bne $t3, $zero, HusoInvalido
-		slti $t3, $v0, 13
-		beq $t3, $zero, HusoInvalido
-		slt $t2, $v0, $zero
+		beq $t4, $zero, HusoInvalido
 		move $a0, $v1
-		beq $t2, $zero, GMTPositivo 
-		addi $t1, $zero, -1
-		mul $v0, $v0, $t1 
+		bne $t5, 45, GMTPositivo
 		add $s1, $s1, $v0
 		j NoHayGMT
 	GMTPositivo:
@@ -92,33 +112,38 @@ Epoch:
 	
 	# Guardo el dia en $s4
 	NoHayGMT1:
-		add $a0, $a0, 1
+		addi $a0, $a0, 1
 	NoHayGMT:
 		jal atoi
-		add $s4, $v0, $s4
 		move $a0, $v1
+		lb $t1, -1($a0)
+		addi $t2,$zero,47
+		add $s4, $v0, $s4
+		
 	
 	
 		#Obtengo el mes
-		lb $t1, -1($a0)
-		bne $t1, 47, FechaInvalida
+		
+		bne $t1, $t2, FechaInvalida
 		la $t1, Mes
 		addi $s5, $zero, 1
 	BucleMes:
+		slti $t2, $s5,13
 		lb $t0, 0($t1)
 		lb $t3, 0($a0)
-		slti $t2, $s5,13
 		beq $t2, $zero, FechaInvalida
 		bne $t0, $t3, SiguientePrimeraVez
+		lb $t0, 1($t1)
+		lb $t3, 1($a0)
 		addi $a0, $a0, 1
 		addi $t1, $t1, 1
-		lb $t0, 0($t1)
-		lb $t3, 0($a0)
+		
 		bne $t0, $t3, SiguienteSegundaVez
+		lb $t0, 1($t1)
+		lb $t3, 1($a0)
 		addi $a0, $a0, 1
 		addi $t1, $t1, 1
-		lb $t0, 0($t1)
-		lb $t3, 0($a0)
+		
 		bne $t0, $t3, SiguienteTerceraVez
 		j ObtenidoMes
 		SiguientePrimeraVez:
@@ -139,31 +164,68 @@ Epoch:
 	# Ya tengo el mes en $s5
 
 	ObtenidoMes:
+	lb $t1, 1($a0)
+	addi $t2,$zero,47
 	addi $a0, $a0, 2
 	#Obtengo el anyo
-	lb $t1, -1($a0)
-	bne $t1, 47, FechaInvalida
+	
+	bne $t1, $t2, FechaInvalida
 	jal atoi
 	slti $t1,$v0,100 # Anyo en $v0
+	addi $t2,$zero,69
+	slt $t2,$t2,$v0
+	
 	beq $t1,$zero,AñoSiglo21
-		addi $t2,$zero,69
-		slt $t1,$t2,$v0
-		beq $t1,$zero,AñoSiglo21
+		
+		
+		beq $t2,$zero,AñoSiglo21
 		addi $v0,$v0,1900
 	AñoSiglo21:
-	slti $t1,$v0,101
-	beq $t1,$zero,AñoCuatroCifras
+	slti $t3,$v0,101
+	addi $t2,$zero,1969
+	beq $t3,$zero,AñoCuatroCifras
 	addi $v0,$v0,2000
 	AñoCuatroCifras:
 	slti $t1,$v0,2101
+	addi $t3,$zero,2100
+	addi $t4,$zero,1970
 	beq $t1,$zero,IntervaloFechaInvalido
-	addi $t2,$zero,1969
+	
 	slt $t1,$t2,$v0
 	beq $t1,$zero,IntervaloFechaInvalido
-	bne $v0,2100,NoLimite
+	beq $v0,$t3,Limite
+	beq $v0,$t4,LimiteInferior
+	j NoLimite
+Limite:
+	slti $t2,$s5,3
+	slti $t1,$s1, 24
 	addi $s6,$s6,-1
-NoLimite:
+	bne $t2,$zero,SumoLimite
+	j NoSumoLimite
+SumoLimite:
+	addi $s6,$s6,1
+NoSumoLimite:
+	beq $t1, $zero, CuidadoPorArriba
+	j NoLimite
 
+CuidadoPorArriba:
+   	beq $s4, 31, CuidadoPorArriba2
+    	j NoLimite
+CuidadoPorArriba2:
+    	beq $s5, 12, IntervaloFechaInvalido
+    	j NoLimite
+LimiteInferior:
+	slt $t1,$s1, $zero
+	bne $t1, $zero, CuidadoPorDebajo
+	j NoLimite
+
+CuidadoPorDebajo:
+    	beq $s4, 1, CuidadoPorDebajo2
+    	j NoLimite
+
+CuidadoPorDebajo2:
+    	beq $s5, 1, IntervaloFechaInvalido
+NoLimite:
 		
 		#Tambien comprobaremos que el mes sea correcto
 
