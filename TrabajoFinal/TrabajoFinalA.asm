@@ -68,18 +68,19 @@ Epoch:
 		bne $t3, $zero, HusoInvalido
 		slti $t3, $v0, 13
 		beq $t3, $zero, HusoInvalido
+		slt $t2, $v0, $zero
+		move $a0, $v1
+		beq $t2, $zero, GMTPositivo 
+		addi $t1, $zero, -1
+		mul $v0, $v0, $t1 
+		add $s1, $s1, $v0
+		j NoHayGMT
+	GMTPositivo:
 		addi $t1, $zero, -1
 		mul $v0, $v0, $t1 
 		move $a0, $v1
 		addi $t2, $zero, 24
 		add $s1, $s1, $v0
-		div $s1, $t2
-		move $t3, $s1
-		mfhi $s1
-		slt $t1, $t3, $t2
-		bne $t1, $zero, NoHayGMT
-
-		addi $s4, $zero, 1
 		j NoHayGMT
 		
 		

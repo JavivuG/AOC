@@ -1,3 +1,3 @@
 cd C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python38\
 
-py ./client -u g105 -x ***REMOVED*** -q mars_epoch .\AOC\TrabajoFinal\TrabajoFinalA.asm -- "22:38:57 GMT+0 29/NOV/95" 
+py ./client -u g105 -x ***REMOVED*** -q mars_epoch .\AOC\TrabajoFinal\TrabajoFinalA.asm -- "02:38:57 GMT+3 1/ENE/95" 
