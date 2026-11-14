@@ -73,7 +73,7 @@ AOC/
 └── TrabajoFinal/   # Epoch, versiones de prueba y depuración
 ```
 
-Los ficheros con nombre numérico (por ejemplo `05876.asm`) son las versiones enviadas al corrector automático de la asignatura. Los `.bat` son los scripts de Windows que se usaban para enviarlas.
+Los ficheros con nombre numérico (por ejemplo `05876.asm`) son las versiones enviadas al corrector automático de la asignatura. Los `.bat` son los scripts de Windows que se usaban para enviarlas. Leen el usuario y la clave del corrector de las variables de entorno `AOC_USER` y `AOC_PASS`.
 
 ## Requisitos
 
